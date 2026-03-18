@@ -1,29 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ExpressVoitures.Data;
+using ExpressVoitures.Interfaces;
+using ExpressVoitures.Models;
+using ExpressVoitures.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using ExpressVoitures.Data;
-using ExpressVoitures.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ExpressVoitures.Controllers
 {
     public class VentesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IVenteService _venteService;
+        private readonly IVoitureService _voitureService;
 
-        public VentesController(ApplicationDbContext context)
+        public VentesController(IVenteService venteService, IVoitureService voitureService)
         {
-            _context = context;
+            _venteService = venteService;
+            _voitureService = voitureService;
         }
 
         // GET: Ventes
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Ventes.Include(v => v.Voiture);
-            return View(await applicationDbContext.ToListAsync());
+            var ventes = await _venteService.ObtenirToutesAsync();
+            return View(ventes);
         }
 
         // GET: Ventes/Details/5
@@ -34,9 +38,7 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
-            var vente = await _context.Ventes
-                .Include(v => v.Voiture)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var vente = await _venteService.ObtenirParIdAsync(id.Value);
             if (vente == null)
             {
                 return NotFound();
@@ -46,9 +48,10 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Ventes/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["IdVoiture"] = new SelectList(_context.Voitures, "Id", "CodeVin");
+            var voitures = await _voitureService.ObtenirToutesAsync();
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "CodeVin");
             return View();
         }
 
@@ -59,13 +62,29 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Date,IdVoiture")] Vente vente)
         {
+            bool venteExiste;
+            venteExiste = await _venteService.ExistePourVoitureAsync(vente.IdVoiture.Value);
+            if (venteExiste)
+            {
+                ModelState.AddModelError("", "Une vente a déjà été ajoutée pour cette voiture.");
+            }
+
+            var voitureVendue = await _voitureService.ObtenirParIdAsync(vente.IdVoiture.Value);
+            if (voitureVendue != null)
+            {
+                if (vente.Date < voitureVendue.DateAchat)
+                {
+                    ModelState.AddModelError("", "La date de vente ne peut pas être antérieure à la date d'achat de la voiture.");
+                }
+            }
+
             if (ModelState.IsValid)
             {
-                _context.Add(vente);
-                await _context.SaveChangesAsync();
+                await _venteService.CreerAsync(vente);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdVoiture"] = new SelectList(_context.Voitures, "Id", "CodeVin", vente.IdVoiture);
+            var voitures = await _voitureService.ObtenirToutesAsync();
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "CodeVin", vente.IdVoiture);
             return View(vente);
         }
 
@@ -77,12 +96,13 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
-            var vente = await _context.Ventes.FindAsync(id);
+            var vente = await _venteService.ObtenirParIdAsync(id.Value);
             if (vente == null)
             {
                 return NotFound();
             }
-            ViewData["IdVoiture"] = new SelectList(_context.Voitures, "Id", "CodeVin", vente.IdVoiture);
+            var voitures = await _voitureService.ObtenirToutesAsync();
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "CodeVin", vente.IdVoiture);
             return View(vente);
         }
 
@@ -98,16 +118,31 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
+            bool venteExiste;
+            venteExiste = await _venteService.ExistePourVoitureAsync(vente.IdVoiture.Value, vente.Id);
+            if (venteExiste)
+            {
+                ModelState.AddModelError("", "Une vente a déjà été ajoutée pour cette voiture.");
+            }
+
+            var voitureVendue = await _voitureService.ObtenirParIdAsync(vente.IdVoiture.Value);
+            if (voitureVendue != null)
+            {
+                if (vente.Date < voitureVendue.DateAchat)
+                {
+                    ModelState.AddModelError("", "La date de vente ne peut pas être antérieure à la date d'achat de la voiture.");
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(vente);
-                    await _context.SaveChangesAsync();
+                    await _venteService.MettreAJourAsync(vente);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!VenteExists(vente.Id))
+                    if (!await VenteExists(vente.Id))
                     {
                         return NotFound();
                     }
@@ -118,7 +153,8 @@ namespace ExpressVoitures.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdVoiture"] = new SelectList(_context.Voitures, "Id", "CodeVin", vente.IdVoiture);
+            var voitures = await _voitureService.ObtenirToutesAsync();
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "CodeVin", vente.IdVoiture);
             return View(vente);
         }
 
@@ -130,9 +166,7 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
-            var vente = await _context.Ventes
-                .Include(v => v.Voiture)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var vente = await _venteService.ObtenirParIdAsync(id.Value);
             if (vente == null)
             {
                 return NotFound();
@@ -146,19 +180,13 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var vente = await _context.Ventes.FindAsync(id);
-            if (vente != null)
-            {
-                _context.Ventes.Remove(vente);
-            }
-
-            await _context.SaveChangesAsync();
+            await _venteService.SupprimerAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool VenteExists(int id)
+        private async Task<bool> VenteExists(int id)
         {
-            return _context.Ventes.Any(e => e.Id == id);
+            return await _venteService.ExisteAsync(id);
         }
     }
 }

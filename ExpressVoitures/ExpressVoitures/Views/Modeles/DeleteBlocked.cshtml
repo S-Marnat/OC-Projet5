@@ -1,0 +1,15 @@
+﻿@model ExpressVoitures.Models.Modele
+
+@{
+    ViewData["Title"] = "DeleteBlocked";
+}
+
+<h1>Suppression impossible</h1>
+
+<div>
+    <p class="alert alert-danger">Impossible de supprimer le modèle <strong>@Model.Nom</strong> car des voitures y sont associées.</p>
+
+    <p>Pour supprimer ce modèle, vous devez d'abord supprimer les voitures qui l'utilisent.</p>
+
+    <p><a asp-action="Index">Back to List</a>
+</div>

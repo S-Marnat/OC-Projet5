@@ -10,7 +10,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="CodeVin" class="control-label"></label>
@@ -19,13 +19,15 @@
             </div>
             <div class="form-group">
                 <label asp-for="Annee" class="control-label"></label>
-                <input asp-for="Annee" class="form-control" />
+                <select asp-for="Annee" asp-items="ViewBag.Annees" class="form-control">
+                    <option value="">Sélectionnez une année</option>
+                </select>
                 <span asp-validation-for="Annee" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Image" class="control-label"></label>
-                <input asp-for="Image" class="form-control" />
-                <span asp-validation-for="Image" class="text-danger"></span>
+                <label asp-for="TelechargerImage" class="control-label"></label>
+                <input asp-for="TelechargerImage" class="form-control" type="file" />
+                <span asp-validation-for="TelechargerImage" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Description" class="control-label"></label>
@@ -69,15 +71,17 @@
             </div>
             <div class="form-group">
                 <label asp-for="IdMarque" class="control-label"></label>
-                <select asp-for="IdMarque" class ="form-control" asp-items="ViewBag.IdMarque"></select>
+                <select asp-for="IdMarque" id="marqueSelect" class="form-control" asp-items="ViewBag.Marques">
+                    <option value="">Sélectionnez une marque</option>
+                </select>
             </div>
             <div class="form-group">
                 <label asp-for="IdModele" class="control-label"></label>
-                <select asp-for="IdModele" class ="form-control" asp-items="ViewBag.IdModele"></select>
+                <select asp-for="IdModele" id="modeleSelect" class="form-control"></select>
             </div>
             <div class="form-group">
                 <label asp-for="IdFinition" class="control-label"></label>
-                <select asp-for="IdFinition" class ="form-control" asp-items="ViewBag.IdFinition"></select>
+                <select id="finitionSelect" asp-for="IdFinition" class="form-control"></select>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -92,4 +96,57 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modelesParMarque = @Html.Raw(Json.Serialize(ViewBag.ModelesParMarque));
+            const finitionsParModele = @Html.Raw(Json.Serialize(ViewBag.FinitionsParModele));
+
+            const marqueSelect = document.getElementById('marqueSelect');
+            const modeleSelect = document.getElementById('modeleSelect');
+            const finitionSelect = document.getElementById('finitionSelect');
+
+            // Désactiver Modèle et Finition
+            modeleSelect.disabled = true;
+            finitionSelect.disabled = true;
+
+            // Sélection d'une marque
+            marqueSelect.addEventListener('change', function () {
+                let marqueId = this.value;
+
+                // Réinitialiser Modèle
+                modeleSelect.innerHTML = '<option value="">Sélectionnez un modèle</option>';
+                modeleSelect.disabled = !marqueId;
+
+                // Réinitialiser Finition
+                finitionSelect.innerHTML = "";
+                finitionSelect.disabled = true;
+
+                // Ajuster la liste des modèles
+                if (marqueId) {
+                    let listeModeles = modelesParMarque[marqueId];
+                    listeModeles.forEach(m => {
+                        modeleSelect.appendChild(new Option(m.text, m.value));
+                    });
+                }
+            });
+
+            // Sélection d'un modèle
+            modeleSelect.addEventListener('change', function () {
+                let modeleId = this.value;
+
+                // Réinitialiser Finition
+                finitionSelect.innerHTML = '<option value="">Sélectionnez une finition</option>';
+                finitionSelect.disabled = !modeleId;
+
+                // Ajuster la liste des finitions
+                if (modeleId) {
+                    let listeFinitions = finitionsParModele[modeleId];
+                    listeFinitions.forEach(f => {
+                        finitionSelect.appendChild(new Option(f.text, f.value));
+                    });
+                }
+            });
+        });
+    </script>
 }

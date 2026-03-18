@@ -7,23 +7,26 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ExpressVoitures.Data;
 using ExpressVoitures.Models;
+using ExpressVoitures.Interfaces;
 
 namespace ExpressVoitures.Controllers
 {
     public class ReparationsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IReparationService _reparationService;
+        private readonly IVoitureService _voitureService;
 
-        public ReparationsController(ApplicationDbContext context)
+        public ReparationsController(IReparationService reparationService, IVoitureService voitureService)
         {
-            _context = context;
+            _reparationService = reparationService;
+            _voitureService = voitureService;
         }
 
         // GET: Reparations
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Reparations.Include(r => r.Voiture);
-            return View(await applicationDbContext.ToListAsync());
+            var reparations = await _reparationService.ObtenirToutesAsync();
+            return View(reparations);
         }
 
         // GET: Reparations/Details/5
@@ -34,9 +37,7 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
-            var reparation = await _context.Reparations
-                .Include(r => r.Voiture)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var reparation = await _reparationService.ObtenirParIdAsync(id.Value);
             if (reparation == null)
             {
                 return NotFound();
@@ -46,9 +47,10 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Reparations/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["IdVoiture"] = new SelectList(_context.Voitures, "Id", "CodeVin");
+            var voitures = await _voitureService.ObtenirToutesAsync();
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "CodeVin");
             return View();
         }
 
@@ -61,11 +63,11 @@ namespace ExpressVoitures.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(reparation);
-                await _context.SaveChangesAsync();
+                await _reparationService.CreerAsync(reparation);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdVoiture"] = new SelectList(_context.Voitures, "Id", "CodeVin", reparation.IdVoiture);
+            var voitures = await _voitureService.ObtenirToutesAsync();
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "CodeVin", reparation.IdVoiture);
             return View(reparation);
         }
 
@@ -77,12 +79,13 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
-            var reparation = await _context.Reparations.FindAsync(id);
+            var reparation = await _reparationService.ObtenirParIdAsync(id.Value);
             if (reparation == null)
             {
                 return NotFound();
             }
-            ViewData["IdVoiture"] = new SelectList(_context.Voitures, "Id", "CodeVin", reparation.IdVoiture);
+            var voitures = await _voitureService.ObtenirToutesAsync();
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "CodeVin", reparation.IdVoiture);
             return View(reparation);
         }
 
@@ -102,12 +105,11 @@ namespace ExpressVoitures.Controllers
             {
                 try
                 {
-                    _context.Update(reparation);
-                    await _context.SaveChangesAsync();
+                    await _reparationService.MettreAJourAsync(reparation);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ReparationExists(reparation.Id))
+                    if (!await ReparationExists(reparation.Id))
                     {
                         return NotFound();
                     }
@@ -118,7 +120,8 @@ namespace ExpressVoitures.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdVoiture"] = new SelectList(_context.Voitures, "Id", "CodeVin", reparation.IdVoiture);
+            var voitures = await _voitureService.ObtenirToutesAsync();
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "CodeVin", reparation.IdVoiture);
             return View(reparation);
         }
 
@@ -130,9 +133,7 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
-            var reparation = await _context.Reparations
-                .Include(r => r.Voiture)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var reparation = await _reparationService.ObtenirParIdAsync(id.Value);
             if (reparation == null)
             {
                 return NotFound();
@@ -146,19 +147,13 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var reparation = await _context.Reparations.FindAsync(id);
-            if (reparation != null)
-            {
-                _context.Reparations.Remove(reparation);
-            }
-
-            await _context.SaveChangesAsync();
+            await _reparationService.SupprimerAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ReparationExists(int id)
+        private async Task<bool> ReparationExists(int id)
         {
-            return _context.Reparations.Any(e => e.Id == id);
+            return await _reparationService.ExisteAsync(id);
         }
     }
 }

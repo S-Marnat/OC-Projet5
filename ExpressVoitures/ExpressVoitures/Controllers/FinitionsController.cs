@@ -7,23 +7,29 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ExpressVoitures.Data;
 using ExpressVoitures.Models;
+using ExpressVoitures.Interfaces;
+using ExpressVoitures.Services;
 
 namespace ExpressVoitures.Controllers
 {
     public class FinitionsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IFinitionService _finitionService;
+        private readonly IModeleService _modeleService;
+        private readonly IVoitureService _voitureService;
 
-        public FinitionsController(ApplicationDbContext context)
+        public FinitionsController(IFinitionService finitionService, IModeleService modeleService, IVoitureService voitureService)
         {
-            _context = context;
+            _finitionService = finitionService;
+            _modeleService = modeleService;
+            _voitureService = voitureService;
         }
 
         // GET: Finitions
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Finitions.Include(f => f.Modele);
-            return View(await applicationDbContext.ToListAsync());
+            var finitions = await _finitionService.ObtenirToutesAsync();
+            return View(finitions);
         }
 
         // GET: Finitions/Details/5
@@ -34,9 +40,7 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
-            var finition = await _context.Finitions
-                .Include(f => f.Modele)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var finition = await _finitionService.ObtenirParIdAsync(id.Value);
             if (finition == null)
             {
                 return NotFound();
@@ -46,9 +50,10 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Finitions/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["IdModele"] = new SelectList(_context.Modeles, "Id", "Nom");
+            var modeles = await _modeleService.ObtenirTousAsync();
+            ViewData["IdModele"] = new SelectList(modeles, "Id", "Nom");
             return View();
         }
 
@@ -59,13 +64,20 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Nom,IdModele")] Finition finition)
         {
+            bool finitionExiste;
+            finitionExiste = await _finitionService.ExistePourModeleAsync(finition.Nom, finition.IdModele);
+            if (finitionExiste)
+            {
+                ModelState.AddModelError("", "Une finition portant ce nom existe déjà pour ce modèle.");
+            }
+
             if (ModelState.IsValid)
             {
-                _context.Add(finition);
-                await _context.SaveChangesAsync();
+                await _finitionService.CreerAsync(finition);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdModele"] = new SelectList(_context.Modeles, "Id", "Nom", finition.IdModele);
+            var modeles = await _modeleService.ObtenirTousAsync();
+            ViewData["IdModele"] = new SelectList(modeles, "Id", "Nom", finition.IdModele);
             return View(finition);
         }
 
@@ -77,12 +89,13 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
-            var finition = await _context.Finitions.FindAsync(id);
+            var finition = await _finitionService.ObtenirParIdAsync(id.Value);
             if (finition == null)
             {
                 return NotFound();
             }
-            ViewData["IdModele"] = new SelectList(_context.Modeles, "Id", "Nom", finition.IdModele);
+            var modeles = await _modeleService.ObtenirTousAsync();
+            ViewData["IdModele"] = new SelectList(modeles, "Id", "Nom", finition.IdModele);
             return View(finition);
         }
 
@@ -98,16 +111,22 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
+            bool finitionExiste;
+            finitionExiste = await _finitionService.ExistePourModeleAsync(finition.Nom, finition.IdModele, finition.Id);
+            if (finitionExiste)
+            {
+                ModelState.AddModelError("", "Une finition portant ce nom existe déjà pour ce modèle.");
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(finition);
-                    await _context.SaveChangesAsync();
+                    await _finitionService.MettreAJourAsync(finition);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!FinitionExists(finition.Id))
+                    if (!await FinitionExists(finition.Id))
                     {
                         return NotFound();
                     }
@@ -118,7 +137,8 @@ namespace ExpressVoitures.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdModele"] = new SelectList(_context.Modeles, "Id", "Nom", finition.IdModele);
+            var modeles = await _modeleService.ObtenirTousAsync();
+            ViewData["IdModele"] = new SelectList(modeles, "Id", "Nom");
             return View(finition);
         }
 
@@ -130,12 +150,18 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
-            var finition = await _context.Finitions
-                .Include(f => f.Modele)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var finition = await _finitionService.ObtenirParIdAsync(id.Value);
             if (finition == null)
             {
                 return NotFound();
+            }
+
+            // Vérifier si une voiture utilise cette finition
+            bool finitionUtilisee = await _voitureService.FinitionUtiliseeAsync(id.Value);
+
+            if (finitionUtilisee)
+            {
+                return View("DeleteBlocked", finition);
             }
 
             return View(finition);
@@ -146,19 +172,13 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var finition = await _context.Finitions.FindAsync(id);
-            if (finition != null)
-            {
-                _context.Finitions.Remove(finition);
-            }
-
-            await _context.SaveChangesAsync();
+            await _finitionService.SupprimerAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool FinitionExists(int id)
+        private async Task<bool> FinitionExists(int id)
         {
-            return _context.Finitions.Any(e => e.Id == id);
+            return await _finitionService.ExisteAsync(id);
         }
     }
 }

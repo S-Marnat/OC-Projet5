@@ -67,7 +67,16 @@
                 @Html.DisplayFor(modelItem => item.Annee)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Image)
+                @if (!string.IsNullOrEmpty(item.Image))
+                {
+                    <img src="~/images/voitures/@item.Image"
+                            alt="Photo"
+                            style="width:100px; height:auto; border-radius:4px;" />
+                }
+                else
+                {
+                    <span>Aucune image</span>
+                }
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Description)

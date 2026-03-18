@@ -1,29 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ExpressVoitures.Data;
+using ExpressVoitures.Interfaces;
+using ExpressVoitures.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using ExpressVoitures.Data;
-using ExpressVoitures.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ExpressVoitures.Controllers
 {
     public class ModelesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IModeleService _modeleService;
+        private readonly IMarqueService _marqueService;
+        private readonly IVoitureService _voitureService;
 
-        public ModelesController(ApplicationDbContext context)
+        public ModelesController(IModeleService modeleService, IMarqueService marqueService, IVoitureService voitureService)
         {
-            _context = context;
+            _modeleService = modeleService;
+            _marqueService = marqueService;
+            _voitureService = voitureService;
         }
 
         // GET: Modeles
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Modeles.Include(m => m.Marque);
-            return View(await applicationDbContext.ToListAsync());
+            var modeles = await _modeleService.ObtenirTousAsync();
+            return View(modeles);
         }
 
         // GET: Modeles/Details/5
@@ -34,9 +40,7 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
-            var modele = await _context.Modeles
-                .Include(m => m.Marque)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var modele = await _modeleService.ObtenirParIdAsync(id.Value);
             if (modele == null)
             {
                 return NotFound();
@@ -46,9 +50,10 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Modeles/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["IdMarque"] = new SelectList(_context.Marques, "Id", "Nom");
+            var marques = await _marqueService.ObtenirToutesAsync();
+            ViewData["IdMarque"] = new SelectList(marques, "Id", "Nom");
             return View();
         }
 
@@ -59,13 +64,20 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Nom,IdMarque")] Modele modele)
         {
+            bool modeleExiste;
+            modeleExiste = await _modeleService.ExistePourMarqueAsync(modele.Nom, modele.IdMarque);
+            if (modeleExiste)
+            {
+                ModelState.AddModelError("", "Un modèle portant ce nom existe déjà pour cette marque.");
+            }
+
             if (ModelState.IsValid)
             {
-                _context.Add(modele);
-                await _context.SaveChangesAsync();
+                await _modeleService.CreerAsync(modele);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdMarque"] = new SelectList(_context.Marques, "Id", "Nom", modele.IdMarque);
+            var marques = await _marqueService.ObtenirToutesAsync();
+            ViewData["IdMarque"] = new SelectList(marques, "Id", "Nom", modele.IdMarque);
             return View(modele);
         }
 
@@ -77,12 +89,13 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
-            var modele = await _context.Modeles.FindAsync(id);
+            var modele = await _modeleService.ObtenirParIdAsync(id.Value);
             if (modele == null)
             {
                 return NotFound();
             }
-            ViewData["IdMarque"] = new SelectList(_context.Marques, "Id", "Nom", modele.IdMarque);
+            var marques = await _marqueService.ObtenirToutesAsync();
+            ViewData["IdMarque"] = new SelectList(marques, "Id", "Nom", modele.IdMarque);
             return View(modele);
         }
 
@@ -98,16 +111,22 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
+            bool modeleExiste;
+            modeleExiste = await _modeleService.ExistePourMarqueAsync(modele.Nom, modele.IdMarque, modele.Id);
+            if (modeleExiste)
+            {
+                ModelState.AddModelError("", "Un modèle portant ce nom existe déjà pour cette marque.");
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(modele);
-                    await _context.SaveChangesAsync();
+                    await _modeleService.MettreAJourAsync(modele);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ModeleExists(modele.Id))
+                    if (!await ModeleExists(modele.Id))
                     {
                         return NotFound();
                     }
@@ -118,7 +137,8 @@ namespace ExpressVoitures.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdMarque"] = new SelectList(_context.Marques, "Id", "Nom", modele.IdMarque);
+            var marques = await _marqueService.ObtenirToutesAsync();
+            ViewData["IdMarque"] = new SelectList(marques, "Id", "Nom", modele.IdMarque);
             return View(modele);
         }
 
@@ -130,12 +150,18 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
-            var modele = await _context.Modeles
-                .Include(m => m.Marque)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var modele = await _modeleService.ObtenirParIdAsync(id.Value);
             if (modele == null)
             {
                 return NotFound();
+            }
+
+            // Vérifier si une voiture utilise ce modèle
+            bool modeleUtilise = await _voitureService.ModeleUtiliseAsync(id.Value);
+
+            if (modeleUtilise)
+            {
+                return View("DeleteBlocked", modele);
             }
 
             return View(modele);
@@ -146,19 +172,13 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var modele = await _context.Modeles.FindAsync(id);
-            if (modele != null)
-            {
-                _context.Modeles.Remove(modele);
-            }
-
-            await _context.SaveChangesAsync();
+            await _modeleService.SupprimerAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ModeleExists(int id)
+        private async Task<bool> ModeleExists(int id)
         {
-            return _context.Modeles.Any(e => e.Id == id);
+            return await _modeleService.ExisteAsync(id);
         }
     }
 }
