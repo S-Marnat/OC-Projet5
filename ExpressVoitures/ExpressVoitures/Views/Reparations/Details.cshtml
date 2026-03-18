@@ -1,0 +1,36 @@
+﻿@model ExpressVoitures.Models.Reparation
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Reparation</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ReparationEffectuee)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ReparationEffectuee)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Cout)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Cout)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Voiture)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Voiture.CodeVin)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
