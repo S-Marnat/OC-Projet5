@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="../ExpressVoitures.Tests/ExpressVoitures.Tests.csproj" Id="33ffa203-67a1-422b-816d-7cdcf8c10ec8" />
   <Project Path="ExpressVoitures/ExpressVoitures.csproj" />
 </Solution>
