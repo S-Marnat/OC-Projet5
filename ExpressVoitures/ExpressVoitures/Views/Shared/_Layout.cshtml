@@ -1,9 +1,31 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@functions {
+    string PageActive(string controller, string action)
+    {
+        var currentController = ViewContext.RouteData.Values["controller"] as string;
+        var currentAction = ViewContext.RouteData.Values["action"] as string;
+
+        return (currentController == controller && currentAction == action) ? "active" : "";
+    }
+
+    string InventaireActif()
+    {
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+
+        // Liste des contrôleurs appartenant à "Inventaire"
+        var inventaireControllers = new[] { "Voitures", "Marques", "Modeles", "Finitions", "Reparations", "Ventes" };
+
+        // Inventaire actif uniquement sur les pages Index
+        return inventaireControllers.Contains(currentController) && currentAction == "Index" ? "active" : "";
+    }
+}
+
+<!DOCTYPE html>
+<html lang="fr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ExpressVoitures</title>
+    <title>@ViewData["Title"] - Express Voitures</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -11,20 +33,33 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ExpressVoitures</a>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm" role="navigation">
+            <div class="container-fluid px-5">
+                <a class="navbar-brand logo" asp-area="" asp-controller="Home" asp-action="Index">Express Voitures</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="navbar-collapse collapse">
+                    <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link px-4 @PageActive("Home", "Index")" asp-area="" asp-controller="Home" asp-action="Index">Accueil</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link px-4 @PageActive("Voitures", "CreateSimple")" asp-area="" asp-controller="Voitures" asp-action="CreateSimple">Ajouter une voiture</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle px-4 @InventaireActif()" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Inventaire
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item @PageActive("Voitures", "Index")" asp-area="" asp-controller="Voitures" asp-action="Index">Voitures</a></li>
+                                <li><a class="dropdown-item @PageActive("Marques", "Index")" asp-area="" asp-controller="Marques" asp-action="Index">Marques</a></li>
+                                <li><a class="dropdown-item @PageActive("Modeles", "Index")" asp-area="" asp-controller="Modeles" asp-action="Index">Modèles</a></li>
+                                <li><a class="dropdown-item @PageActive("Finitions", "Index")" asp-area="" asp-controller="Finitions" asp-action="Index">Finitions</a></li>
+                                <li><a class="dropdown-item @PageActive("Reparations", "Index")" asp-area="" asp-controller="Reparations" asp-action="Index">Réparations</a></li>
+                                <li><a class="dropdown-item @PageActive("Ventes", "Index")" asp-area="" asp-controller="Ventes" asp-action="Index">Ventes</a></li>
+                            </ul>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
@@ -38,10 +73,7 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - ExpressVoitures - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
+    <footer>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

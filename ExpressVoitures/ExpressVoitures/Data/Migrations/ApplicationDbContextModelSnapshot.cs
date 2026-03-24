@@ -149,11 +149,10 @@ namespace ExpressVoitures.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("CodeVin")
-                        .IsRequired()
                         .HasMaxLength(17)
                         .HasColumnType("nvarchar(17)");
 
-                    b.Property<DateTime>("DateAchat")
+                    b.Property<DateTime?>("DateAchat")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DateMiseEnVente")
@@ -175,10 +174,10 @@ namespace ExpressVoitures.Data.Migrations
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("PrixAchat")
+                    b.Property<double?>("PrixAchat")
                         .HasColumnType("float");
 
-                    b.Property<double?>("PrixMiseEnVente")
+                    b.Property<double>("PrixMiseEnVente")
                         .HasColumnType("float");
 
                     b.Property<bool>("VoitureReparee")

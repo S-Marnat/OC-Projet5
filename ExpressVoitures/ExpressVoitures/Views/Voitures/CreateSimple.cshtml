@@ -1,0 +1,228 @@
+﻿@model ExpressVoitures.Models.Voiture
+
+@{
+    ViewData["Title"] = "Ajouter une voiture";
+}
+
+<h1>Ajouter une voiture</h1>
+
+<p class="information"> Tous les champs sont obligatoires</p>
+
+<div class="row formDonnees">
+    <div class="col-md-5 mx-auto">
+        <form asp-action="CreateSimple" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="PrixMiseEnVente" class="control-label">Prix de vente</label>
+                <input asp-for="PrixMiseEnVente" class="form-control" />
+                <span asp-validation-for="PrixMiseEnVente" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Annee" class="control-label">Année</label>
+                <select asp-for="Annee" asp-items="ViewBag.Annees" class="form-control">
+                    <option value="">Sélectionnez une année</option>
+                </select>
+                <span asp-validation-for="Annee" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdMarque" class="control-label">Marque</label>
+                <select asp-for="IdMarque" id="marqueSelect" class="form-control" asp-items="ViewBag.Marques">
+                    <option value="">Sélectionnez une marque</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdModele" class="control-label">Modèle</label>
+                <select asp-for="IdModele" id="modeleSelect" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdFinition" class="control-label">Finition</label>
+                <select id="finitionSelect" asp-for="IdFinition" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="TelechargerImage" class="control-label">Visuel</label>
+                <input asp-for="TelechargerImage" class="form-control" type="file" />
+                <span asp-validation-for="TelechargerImage" class="text-danger"></span>
+            </div>
+            <div class="form-group d-flex justify-content-center">
+                <input type="submit" value="Publier" class="boutonAction" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@* -- Les modales -- *@
+@* Modale pour Marque *@
+<div class="modal fade" id="modaleMarque" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Créer une marque</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                @await Html.PartialAsync("~/Views/Marques/_CreatePartial.cshtml", new ExpressVoitures.Models.Marque())
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modale pour Modèle *@
+<div class="modal fade" id="modaleModele" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Créer un modèle pour la marque sélectionnée</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                @await Html.PartialAsync("~/Views/Modeles/_CreatePartial.cshtml", new ExpressVoitures.Models.Modele())
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modale pour Finition *@
+<div class="modal fade" id="modaleFinition" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Créer une finition pour le modèle sélectionné</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                @await Html.PartialAsync("~/Views/Finitions/_CreatePartial.cshtml", new ExpressVoitures.Models.Finition())
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            // Gestion des relations entre marque-modèle-finition
+            const modelesParMarque = @Html.Raw(Json.Serialize(ViewBag.ModelesParMarque));
+            const finitionsParModele = @Html.Raw(Json.Serialize(ViewBag.FinitionsParModele));
+
+            const marqueSelect = document.getElementById('marqueSelect');
+            const modeleSelect = document.getElementById('modeleSelect');
+            const finitionSelect = document.getElementById('finitionSelect');
+
+            // Désactiver Modèle et Finition
+            modeleSelect.disabled = true;
+            finitionSelect.disabled = true;
+
+            // Ajouter l'option "Autre..." dans Marque
+            marqueSelect.appendChild(new Option("Autre…", "-1"));
+
+            // -- Sélection d'une marque --
+            // Présélectionner automatiquement une marque créée
+            @if (ViewBag.MarqueCree != null)
+            {
+                <text>
+                    marqueSelect.value = "@ViewBag.MarqueCree";
+                    marqueSelect.dispatchEvent(new Event('change'));
+                </text>
+            }
+
+            // Changement de la marque
+            marqueSelect.addEventListener('change', function () {
+                let marqueId = this.value;
+
+                // Ouvrir une modale quand "Autre..." est sélectionné
+                if (this.value === "-1") {
+                    $("#modaleMarque").modal("show");
+                    return;
+                }
+                
+                // Réinitialiser Modèle
+                modeleSelect.innerHTML = '<option value="">Sélectionnez un modèle</option>';
+                modeleSelect.disabled = false;
+
+                // Réinitialiser Finition
+                finitionSelect.innerHTML = "";
+                finitionSelect.disabled = true;
+
+                // Ajuster la liste des modèles
+                if (marqueId) {
+                    let listeModeles = modelesParMarque[marqueId];
+                    listeModeles.forEach(m => {
+                        modeleSelect.appendChild(new Option(m.text, m.value));
+                    });
+                    modeleSelect.appendChild(new Option("Autre…", "-1"));
+
+                    // Présélectionner automatiquement un modèle créé
+                    @if (ViewBag.ModeleCree != null)
+                    {
+                        <text>
+                            modeleSelect.value = "@ViewBag.ModeleCree";
+                            modeleSelect.dispatchEvent(new Event('change'));
+                        </text>
+                    }
+                }
+            });
+
+            // -- Sélection d'un modèle --
+            // Changement du modèle
+            modeleSelect.addEventListener('change', function () {
+                let modeleId = this.value;
+
+                // Ouvrir une modale quand "Autre..." est sélectionné
+                if (this.value === "-1") {
+                    document.getElementById("idMarquePourModele").value = marqueSelect.value;
+                    $("#modaleModele").modal("show");
+                    return;
+                }
+
+                // Réinitialiser Finition
+                finitionSelect.innerHTML = '<option value="">Sélectionnez une finition</option>';
+                finitionSelect.disabled = false;
+
+                // Ajuster la liste des finitions
+                if (modeleId) {
+                    let listeFinitions = finitionsParModele[modeleId];
+                    listeFinitions.forEach(f => {
+                        finitionSelect.appendChild(new Option(f.text, f.value));
+                    });
+                    finitionSelect.appendChild(new Option("Autre…", "-1"));
+
+                    // Présélectionner automatiquement une finition créée
+                    @if (ViewBag.FinitionCree != null)
+                    {
+                        <text>
+                            finitionSelect.value = "@ViewBag.FinitionCree";
+                        </text>
+                    }
+                }
+            });
+            
+            // -- Sélection d'une finition --
+            // Changement de la finition
+            finitionSelect.addEventListener('change', function () {
+                let finitionId = this.value;
+
+                // Ouvrir une modale quand "Autre..." est sélectionné
+                if (this.value === "-1") {
+                    document.getElementById("idModelePourFinition").value = modeleSelect.value;
+                    $("#modaleFinition").modal("show");
+                    return;
+                }
+            });
+        });
+
+        // Réinitionaliser les valeurs des select pour pouvoir afficher de nouveau une modale
+        $('#modaleMarque').on('hidden.bs.modal', function () {
+            marqueSelect.value = "";
+        });
+
+        $('#modaleModele').on('hidden.bs.modal', function () {
+            modeleSelect.value = "";
+        });
+
+        $('#modaleFinition').on('hidden.bs.modal', function () {
+            finitionSelect.value = "";
+        });
+    </script>
+}

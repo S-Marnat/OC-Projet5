@@ -1,17 +1,15 @@
 ﻿@model ExpressVoitures.Models.Marque
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Détails de la marque";
 }
 
-<h1>Details</h1>
+<h1>Détails de la marque</h1>
 
 <div>
-    <h4>Marque</h4>
-    <hr />
     <dl class="row">
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Nom)
+            Nom de la marque
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Nom)
@@ -19,6 +17,6 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Editer la marque</a> |
+    <a asp-action="Index">Retour à la liste des marques</a>
 </div>

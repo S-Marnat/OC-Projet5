@@ -19,5 +19,6 @@ namespace ExpressVoitures.Interfaces
         Task<List<Voiture>> ObtenirParMarqueAsync(int idMarque);
         Task<List<Voiture>> ObtenirParModeleAsync(int idModele);
         Task<List<Voiture>> ObtenirParFinitionAsync(int idFinition);
+        Task<List<Voiture>> ObtenirParPresenceCodeVinAsync();
     }
 }

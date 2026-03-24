@@ -1,0 +1,24 @@
+﻿@model ExpressVoitures.Models.Voiture
+
+@{
+    ViewData["Title"] = "Voiture supprimée";
+}
+
+<div class="text-center pageInformative">
+
+    <h1>
+        @Model.Annee
+        @Model.Marque.Nom
+        @Model.Modele.Nom
+        @Model.Finition.Nom
+    </h1>
+
+    <p class="information">
+        a bien été supprimée
+    </p>
+
+    <div class="text-center">
+        <a asp-controller="Home" asp-action="Index" class="boutonAction">Retour à l'accueil</a>
+    </div>
+
+</div>

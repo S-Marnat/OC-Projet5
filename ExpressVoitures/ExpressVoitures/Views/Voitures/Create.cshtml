@@ -1,97 +1,97 @@
 ﻿@model ExpressVoitures.Models.Voiture
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Créer une voiture";
 }
 
-<h1>Create</h1>
+<h1>Créer une voiture</h1>
 
-<h4>Voiture</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
+<p class="information"> Les champs précédés d'une apostorphe <span class="rouge">*</span> sont obligatoires</p>
+
+<div class="row formDonnees">
+    <div class="col-md-5 mx-auto">
         <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="CodeVin" class="control-label"></label>
+                <label asp-for="CodeVin" class="control-label">Code VIN</label>
                 <input asp-for="CodeVin" class="form-control" />
                 <span asp-validation-for="CodeVin" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Annee" class="control-label"></label>
+                <label asp-for="Annee" class="control-label">Année <span class="rouge">*</span></label>
                 <select asp-for="Annee" asp-items="ViewBag.Annees" class="form-control">
                     <option value="">Sélectionnez une année</option>
                 </select>
                 <span asp-validation-for="Annee" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="TelechargerImage" class="control-label"></label>
-                <input asp-for="TelechargerImage" class="form-control" type="file" />
-                <span asp-validation-for="TelechargerImage" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DateAchat" class="control-label"></label>
-                <input asp-for="DateAchat" class="form-control" />
-                <span asp-validation-for="DateAchat" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="PrixAchat" class="control-label"></label>
-                <input asp-for="PrixAchat" class="form-control" />
-                <span asp-validation-for="PrixAchat" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="VoitureReparee" /> @Html.DisplayNameFor(model => model.VoitureReparee)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="DateMiseEnVente" class="control-label"></label>
-                <input asp-for="DateMiseEnVente" class="form-control" />
-                <span asp-validation-for="DateMiseEnVente" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="PrixMiseEnVente" class="control-label"></label>
-                <input asp-for="PrixMiseEnVente" class="form-control" />
-                <span asp-validation-for="PrixMiseEnVente" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="AnnoncePubliee" /> @Html.DisplayNameFor(model => model.AnnoncePubliee)
-                </label>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="VoitureVendue" /> @Html.DisplayNameFor(model => model.VoitureVendue)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="IdMarque" class="control-label"></label>
+                <label asp-for="IdMarque" class="control-label">Marque <span class="rouge">*</span></label>
                 <select asp-for="IdMarque" id="marqueSelect" class="form-control" asp-items="ViewBag.Marques">
                     <option value="">Sélectionnez une marque</option>
                 </select>
             </div>
             <div class="form-group">
-                <label asp-for="IdModele" class="control-label"></label>
+                <label asp-for="IdModele" class="control-label">Modèle <span class="rouge">*</span></label>
                 <select asp-for="IdModele" id="modeleSelect" class="form-control"></select>
             </div>
             <div class="form-group">
-                <label asp-for="IdFinition" class="control-label"></label>
+                <label asp-for="IdFinition" class="control-label">Finition <span class="rouge">*</span></label>
                 <select id="finitionSelect" asp-for="IdFinition" class="form-control"></select>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <label asp-for="TelechargerImage" class="control-label">Visuel <span class="rouge">*</span></label>
+                <input asp-for="TelechargerImage" class="form-control" type="file" />
+                <span asp-validation-for="TelechargerImage" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label">Description</label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateAchat" class="control-label">Date d'achat</label>
+                <input asp-for="DateAchat" class="form-control" />
+                <span asp-validation-for="DateAchat" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PrixAchat" class="control-label">Prix d'achat</label>
+                <input asp-for="PrixAchat" class="form-control" />
+                <span asp-validation-for="PrixAchat" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="VoitureReparee" /> La voiture a-t-elle subi des réparations ?
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateMiseEnVente" class="control-label">Date de mise en vente</label>
+                <input asp-for="DateMiseEnVente" class="form-control" />
+                <span asp-validation-for="DateMiseEnVente" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PrixMiseEnVente" class="control-label">Prix de vente</label>
+                <input asp-for="PrixMiseEnVente" class="form-control" />
+                <span asp-validation-for="PrixMiseEnVente" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="AnnoncePubliee" /> L'annonce doit-elle être publiée ?
+                </label>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="VoitureVendue" /> La voiture a-t-elle été vendue ?
+                </label>
+            </div>
+            <div class="form-group d-flex justify-content-center">
+                <input type="submit" value="Créer" class="boutonAction" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Retour à la liste des voitures</a>
 </div>
 
 @section Scripts {
@@ -99,6 +99,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            
+            // Gestion des relations entre marque-modèle-finition
             const modelesParMarque = @Html.Raw(Json.Serialize(ViewBag.ModelesParMarque));
             const finitionsParModele = @Html.Raw(Json.Serialize(ViewBag.FinitionsParModele));
 
@@ -147,6 +149,9 @@
                     });
                 }
             });
+
+            // Gestion du prix de vente automatique
+            
         });
     </script>
 }

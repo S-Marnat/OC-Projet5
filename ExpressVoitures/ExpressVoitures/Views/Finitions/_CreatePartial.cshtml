@@ -1,0 +1,33 @@
+﻿@model ExpressVoitures.Models.Finition
+
+@{
+    ViewData["Title"] = "Créer une finition";
+}
+
+<h1>Créer une finition</h1>
+
+<div class="row formDonnees">
+    <div>
+        <form asp-controller="Finitions" asp-action="CreateDepuisVoiture" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Nom" class="control-label">Nom de la finition</label>
+                <input asp-for="Nom" class="form-control" />
+                <span asp-validation-for="Nom" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdModele" class="visually-hidden">Modèle correspondant à cette finition</label>
+                <input type="hidden" asp-for="IdModele" id="idModelePourFinition" />
+            </div>
+            <div class="form-group d-flex justify-content-center">
+                <input type="submit" value="Créer" class="boutonAction" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -56,11 +56,39 @@ namespace ExpressVoitures.Controllers
             return View(voiture);
         }
 
+        public async Task<IActionResult> DetailsSimple(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var voiture = await _voitureService.ObtenirParIdAsync(id.Value);
+            if (voiture == null)
+            {
+                return NotFound();
+            }
+
+            return View(voiture);
+        }
+
         // GET: Voitures/Create
-        public async Task<IActionResult> Create(int? idMarque, int? idModele)
+        public async Task<IActionResult> Create()
         {
             ListeAnnees();
             await ListesMarquesModelesFinitions();
+            return View();
+        }
+
+        public async Task<IActionResult> CreateSimple(int? idMarqueCree, int? idModeleCree, int? idFinitionCree)
+        {
+            ListeAnnees();
+            await ListesMarquesModelesFinitions();
+
+            ViewBag.MarqueCree = idMarqueCree;
+            ViewBag.ModeleCree = idModeleCree;
+            ViewBag.FinitionCree = idFinitionCree;
+
             return View();
         }
 
@@ -71,14 +99,17 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,CodeVin,Annee,Image,TelechargerImage,Description,DateAchat,PrixAchat,VoitureReparee,DateMiseEnVente,PrixMiseEnVente,AnnoncePubliee,VoitureVendue,IdMarque,IdModele,IdFinition")] Voiture voiture)
         {
-            bool voitureExiste;
-            voitureExiste = await _voitureService.VinExisteAsync(voiture.CodeVin);
-            if (voitureExiste)
+            if (voiture.CodeVin != null)
             {
-                ModelState.AddModelError("", "Une voiture portant ce code VIN existe déjà.");
+                bool voitureExiste;
+                voitureExiste = await _voitureService.VinExisteAsync(voiture.CodeVin);
+                if (voitureExiste)
+                {
+                    ModelState.AddModelError("", "Une voiture portant ce code VIN existe déjà.");
+                }
             }
 
-            if (voiture.DateMiseEnVente < voiture.DateAchat)
+            if (voiture.DateAchat != null && voiture.DateMiseEnVente < voiture.DateAchat)
             {
                 ModelState.AddModelError("", "La date de mise en vente ne peut pas être antérieure à la date d'achat de la voiture.");
             }
@@ -87,45 +118,60 @@ namespace ExpressVoitures.Controllers
             {
                 if (voiture.TelechargerImage != null)
                 {
-                    // Génération d'un nom de fichier unique
-                    var nomImage = Guid.NewGuid() + Path.GetExtension(voiture.TelechargerImage.FileName);
-
-                    // Vérifier l'extension du fichier
-                    var extensionsAutorisees = new[] { ".jpg", ".jpeg", ".png" };
-                    var extension = Path.GetExtension(voiture.TelechargerImage.FileName).ToLower();
-
-                    if (!extensionsAutorisees.Contains(extension))
+                    try
                     {
-                        ModelState.AddModelError("TelechargerImage", "Seuls les fichiers JPG et PNG sont autorisés.");
+                        voiture.Image = await TelechargerImageAsync(voiture);
+                    }
+                    catch (Exception exception)
+                    {
+                        if (exception.Message == "EXTENSION_INVALIDE")
+                            ModelState.AddModelError("TelechargerImage", "Seuls les fichiers JPG et PNG sont autorisés.");
+
+                        if (exception.Message == "TAILLE_INVALIDE")
+                            ModelState.AddModelError("TelechargerImage", "La taille du fichier ne doit pas dépasser 2 Mo.");
+
                         ListeAnnees();
                         await ListesMarquesModelesFinitions();
                         return View(voiture);
                     }
-
-                    // Vérifier la taille du fichier
-                    long tailleMax = 2 * 1024 * 1024;
-
-                    if (voiture.TelechargerImage.Length > tailleMax)
-                    {
-                        ModelState.AddModelError("TelechargerImage", "La taille du fichier ne doit pas dépasser 2 Mo.");
-                        ListeAnnees();
-                        await ListesMarquesModelesFinitions();
-                        return View(voiture);
-                    }
-
-                    // Construction du chemin de l'image
-                    var nomChemin = Path.Combine("wwwroot/images/voitures", nomImage);
-
-                    // Création du fichier physique dans le projet
-                    using (var stream = new FileStream(nomChemin, FileMode.Create))
-                    {
-                        await voiture.TelechargerImage.CopyToAsync(stream);
-                    }
-
-                    voiture.Image = nomImage;
                 }
                 await _voitureService.CreerAsync(voiture);
-                return RedirectToAction(nameof(Index));
+                return View("CreateSucces");
+            }
+
+            ListeAnnees();
+            await ListesMarquesModelesFinitions();
+            return View(voiture);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateSimple([Bind("Id,Annee,Image,TelechargerImage,PrixMiseEnVente,AnnoncePubliee,IdMarque,IdModele,IdFinition")] Voiture voiture)
+        {
+            if (ModelState.IsValid)
+            {
+                if (voiture.TelechargerImage != null)
+                {
+                    try
+                    {
+                        voiture.Image = await TelechargerImageAsync(voiture);
+                    }
+                    catch (Exception exception)
+                    {
+                        if (exception.Message == "EXTENSION_INVALIDE")
+                            ModelState.AddModelError("TelechargerImage", "Seuls les fichiers JPG et PNG sont autorisés.");
+
+                        if (exception.Message == "TAILLE_INVALIDE")
+                            ModelState.AddModelError("TelechargerImage", "La taille du fichier ne doit pas dépasser 2 Mo.");
+
+                        ListeAnnees();
+                        await ListesMarquesModelesFinitions();
+                        return View(voiture);
+                    }
+                }
+                voiture.AnnoncePubliee = true;
+                await _voitureService.CreerAsync(voiture);
+                return View("CreateSucces");
             }
 
             ListeAnnees();
@@ -135,6 +181,24 @@ namespace ExpressVoitures.Controllers
 
         // GET: Voitures/Edit/5
         public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var voiture = await _voitureService.ObtenirParIdAsync(id.Value);
+            if (voiture == null)
+            {
+                return NotFound();
+            }
+
+            ListeAnnees();
+            await ListesMarquesModelesFinitions();
+            return View(voiture);
+        }
+
+        public async Task<IActionResult> EditSimple(int? id)
         {
             if (id == null)
             {
@@ -164,14 +228,17 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
-            bool voitureExiste;
-            voitureExiste = await _voitureService.VinExisteAsync(voiture.CodeVin, voiture.Id);
-            if (voitureExiste)
+            if (voiture.CodeVin != null)
             {
-                ModelState.AddModelError("", "Une voiture portant ce code VIN existe déjà.");
+                bool voitureExiste;
+                voitureExiste = await _voitureService.VinExisteAsync(voiture.CodeVin, voiture.Id);
+                if (voitureExiste)
+                {
+                    ModelState.AddModelError("", "Une voiture portant ce code VIN existe déjà.");
+                }
             }
 
-            if (voiture.DateMiseEnVente < voiture.DateAchat)
+            if (voiture.DateAchat != null && voiture.DateMiseEnVente < voiture.DateAchat)
             {
                 ModelState.AddModelError("", "La date de mise en vente ne peut pas être antérieure à la date d'achat de la voiture.");
             }
@@ -182,52 +249,22 @@ namespace ExpressVoitures.Controllers
                 {
                     if (voiture.TelechargerImage != null)
                     {
-                        // Vérifier l'extension du fichier
-                        var extensionsAutorisees = new[] { ".jpg", ".jpeg", ".png" };
-                        var extension = Path.GetExtension(voiture.TelechargerImage.FileName).ToLower();
-
-                        if (!extensionsAutorisees.Contains(extension))
+                        try
                         {
-                            ModelState.AddModelError("TelechargerImage", "Seuls les fichiers JPG et PNG sont autorisés.");
+                            voiture.Image = await TelechargerImageAsync(voiture);
+                        }
+                        catch (Exception exception)
+                        {
+                            if (exception.Message == "EXTENSION_INVALIDE")
+                                ModelState.AddModelError("TelechargerImage", "Seuls les fichiers JPG et PNG sont autorisés.");
+
+                            if (exception.Message == "TAILLE_INVALIDE")
+                                ModelState.AddModelError("TelechargerImage", "La taille du fichier ne doit pas dépasser 2 Mo.");
+
                             ListeAnnees();
                             await ListesMarquesModelesFinitions();
                             return View(voiture);
                         }
-
-                        // Vérifier la taille du fichier
-                        long tailleMax = 2 * 1024 * 1024;
-
-                        if (voiture.TelechargerImage.Length > tailleMax)
-                        {
-                            ModelState.AddModelError("TelechargerImage", "La taille du fichier ne doit pas dépasser 2 Mo.");
-                            ListeAnnees();
-                            await ListesMarquesModelesFinitions();
-                            return View(voiture);
-                        }
-
-                        // Supprimer l'ancienne image si elle existe
-                        if (!string.IsNullOrEmpty(voiture.Image))
-                        {
-                            var ancienChemin = Path.Combine("wwwroot/images/voitures", voiture.Image);
-                            if (System.IO.File.Exists(ancienChemin))
-                            {
-                                System.IO.File.Delete(ancienChemin);
-                            }
-                        }
-
-                        // Génération d'un nom de fichier unique
-                        var nomImage = Guid.NewGuid() + Path.GetExtension(voiture.TelechargerImage.FileName);
-
-                        // Construction du chemin de l'image
-                        var nomChemin = Path.Combine("wwwroot/images/voitures", nomImage);
-
-                        // Création du fichier physique dans le projet
-                        using (var stream = new FileStream(nomChemin, FileMode.Create))
-                        {
-                            await voiture.TelechargerImage.CopyToAsync(stream);
-                        }
-
-                        voiture.Image = nomImage;
                     }
                     await _voitureService.MettreAJourAsync(voiture);
                 }
@@ -243,6 +280,60 @@ namespace ExpressVoitures.Controllers
                     }
                 }
                 return RedirectToAction(nameof(Index));
+            }
+
+            ListeAnnees();
+            await ListesMarquesModelesFinitions();
+            return View(voiture);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditSimple(int id, [Bind("Id,Annee,Image,TelechargerImage,PrixMiseEnVente,AnnoncePubliee,IdMarque,IdModele,IdFinition")] Voiture voiture)
+        {
+            if (id != voiture.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    if (voiture.TelechargerImage != null)
+                    {
+                        try
+                        {
+                            voiture.Image = await TelechargerImageAsync(voiture);
+                        }
+                        catch (Exception exception)
+                        {
+                            if (exception.Message == "EXTENSION_INVALIDE")
+                                ModelState.AddModelError("TelechargerImage", "Seuls les fichiers JPG et PNG sont autorisés.");
+
+                            if (exception.Message == "TAILLE_INVALIDE")
+                                ModelState.AddModelError("TelechargerImage", "La taille du fichier ne doit pas dépasser 2 Mo.");
+
+                            ListeAnnees();
+                            await ListesMarquesModelesFinitions();
+                            return View(voiture);
+                        }
+                    }
+                    voiture.AnnoncePubliee = true;
+                    await _voitureService.MettreAJourAsync(voiture);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!await VoitureExists(voiture.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction("DetailsSimple", new { id = voiture.Id });
             }
 
             ListeAnnees();
@@ -283,8 +374,18 @@ namespace ExpressVoitures.Controllers
                 }
             }
 
+            // Stockage des informations de la voiture avant de la supprimer
+            var voitureSupprimee = new Voiture
+            {
+                Id = voiture.Id,
+                Annee = voiture.Annee,
+                Marque = voiture.Marque,
+                Modele = voiture.Modele,
+                Finition = voiture.Finition
+            };
+
             await _voitureService.SupprimerAsync(id);
-            return RedirectToAction(nameof(Index));
+            return View("DeleteSucces", voitureSupprimee);
         }
 
         private async Task<bool> VoitureExists(int id)
@@ -303,11 +404,6 @@ namespace ExpressVoitures.Controllers
                 .ToList();
 
             ViewData["Annees"] = new SelectList(annees);
-        }
-
-        private void prixVenteFinal()
-        {
-
         }
 
         private async Task ListesMarquesModelesFinitions()
@@ -352,6 +448,36 @@ namespace ExpressVoitures.Controllers
             }
 
             ViewBag.FinitionsParModele = finitionsParModele;
+        }
+
+        private async Task<string?> TelechargerImageAsync(Voiture voiture)
+        {
+            // Génération d'un nom de fichier unique
+            var nomImage = Guid.NewGuid() + Path.GetExtension(voiture.TelechargerImage.FileName);
+
+            // Vérifier l'extension du fichier
+            var extensionsAutorisees = new[] { ".jpg", ".jpeg", ".png" };
+            var extension = Path.GetExtension(voiture.TelechargerImage.FileName).ToLower();
+
+            if (!extensionsAutorisees.Contains(extension))
+                throw new Exception("EXTENSION_INVALIDE");
+
+            // Vérifier la taille du fichier
+            long tailleMax = 2 * 1024 * 1024;
+
+            if (voiture.TelechargerImage.Length > tailleMax)
+                throw new Exception("TAILLE_INVALIDE");
+
+            // Construction du chemin de l'image
+            var nomChemin = Path.Combine("wwwroot/images/voitures", nomImage);
+
+            // Création du fichier physique dans le projet
+            using (var stream = new FileStream(nomChemin, FileMode.Create))
+            {
+                await voiture.TelechargerImage.CopyToAsync(stream);
+            }
+
+            return nomImage;
         }
     }
 }

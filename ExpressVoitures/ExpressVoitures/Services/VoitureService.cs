@@ -105,6 +105,13 @@ namespace ExpressVoitures.Services
                 .ToListAsync();
         }
 
+        public async Task<List<Voiture>> ObtenirParPresenceCodeVinAsync()
+        {
+            return await _context.Voitures
+                .Where(v => v.CodeVin != null)
+                .ToListAsync();
+        }
+
         public async Task<List<Voiture>> ObtenirToutesAsync()
         {
             return await _context.Voitures

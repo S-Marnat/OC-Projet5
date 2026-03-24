@@ -1,0 +1,66 @@
+﻿@model ExpressVoitures.Models.Voiture
+
+@{
+    ViewData["Title"] = "Détails de la voiture";
+}
+
+<h1 hidden="hidden">Détails de la voiture</h1>
+
+<div class="naviguer">
+    <a asp-controller="Home" asp-action="Index" class="naviguer">← Retour</a>
+</div>
+
+<div class="container-fluid details">
+    <div class="row">
+
+        @*Image de la voiture*@
+        <div class="col-md-7">
+            <div class="image">
+                @if (!string.IsNullOrEmpty(Model.Image))
+                {
+                    <img src="~/images/voitures/@Model.Image"
+                         alt="Photo de la voiture" />
+                }
+                else
+                {
+                    <div class="no-image">Aucune image disponible</div>
+                }
+            </div>
+        </div>
+
+        @*Texte*@
+        <div class="col-5">
+
+            @*Contrôles*@
+            <div class="information">
+                <p>Vous avez publié cette annonce, vous pouvez la :</p>
+
+                <div class="controles">
+                    <a asp-controller="Voitures"
+                           asp-action="EditSimple"
+                           asp-route-id="@Model.Id"
+                           class="modification modifier">
+                        modifier
+                    </a>
+
+                    <a asp-controller="Voitures"
+                           asp-action="Delete"
+                           asp-route-id="@Model.Id"
+                           class="modification supprimer">
+                        supprimer
+                    </a>
+                </div>
+            </div>
+
+            @*Informations de la voiture*@
+            <div class="texte">
+                <h2>@Html.DisplayFor(model => model.PrixMiseEnVente) €</h2>
+                <p>@Html.DisplayFor(model => model.Annee)</p>
+                <p>@Html.DisplayFor(model => model.Marque.Nom)</p>
+                <p>@Html.DisplayFor(model => model.Modele.Nom)</p>
+                <p>@Html.DisplayFor(model => model.Finition.Nom)</p>
+            </div>
+
+        </div>
+    </div>
+</div>

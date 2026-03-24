@@ -1,25 +1,25 @@
 ﻿@model IEnumerable<ExpressVoitures.Models.Reparation>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Liste des réparations";
 }
 
-<h1>Index</h1>
+<h1>Liste des réparations</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create">Créer une nouvelle réparation</a>
 </p>
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.ReparationEffectuee)
+                Nom
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Cout)
+                Prix
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Voiture)
+                Voiture
             </th>
             <th></th>
         </tr>
@@ -37,9 +37,9 @@
                 @Html.DisplayFor(modelItem => item.Voiture.CodeVin)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.Id">Editer</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Détails</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Supprimer</a>
             </td>
         </tr>
 }

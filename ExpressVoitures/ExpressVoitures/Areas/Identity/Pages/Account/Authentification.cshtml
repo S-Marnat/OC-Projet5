@@ -1,0 +1,38 @@
+﻿@page
+@model ExpressVoitures.Areas.Identity.Pages.Account.AuthentificationModel
+@{
+    ViewData["Title"] = "Authentification";
+}
+
+<h1 class="titreAuthentification">Express Voitures</h1>
+
+<div class="row authentification">
+    <div class="col-md-5 mx-auto">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Input.Email" class="form-label">Adresse email</label>
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group>
+                <label asp-for="Input.Password" class="form-label">Mot de passe</label>
+                <input asp-for="Input.Password" type="password" class="form-control" autocomplete="current-password" />
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <div class="ligneBoutons">
+                <button type="submit" name="action" value="login" class="boutonAction">Se connecter</button>
+                <span>ou</span>
+                <button type="submit" name="action" value="register" class="boutonAction">S’inscrire</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

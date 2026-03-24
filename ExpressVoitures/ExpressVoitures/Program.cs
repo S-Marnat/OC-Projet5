@@ -12,11 +12,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<IFinitionService, FinitionService>();
+builder.Services.AddScoped<IHomeService, HomeService>();
 builder.Services.AddScoped<IMarqueService, MarqueService>();
 builder.Services.AddScoped<IModeleService, ModeleService>();
 builder.Services.AddScoped<IReparationService, ReparationService>();

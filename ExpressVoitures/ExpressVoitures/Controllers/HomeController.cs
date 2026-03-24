@@ -1,3 +1,4 @@
+using ExpressVoitures.Interfaces;
 using ExpressVoitures.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -6,9 +7,17 @@ namespace ExpressVoitures.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly IHomeService _homeService;
+
+        public HomeController(IHomeService homeService)
         {
-            return View();
+            _homeService = homeService;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var voitures = await _homeService.ObtenirVoituresPublieesAsync();
+            return View(voitures);
         }
 
         public IActionResult Privacy()

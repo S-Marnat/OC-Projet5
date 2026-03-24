@@ -1,0 +1,29 @@
+﻿@model ExpressVoitures.Models.Marque
+
+@{
+    ViewData["Title"] = "Créer une marque";
+}
+
+<h1>Créer une marque</h1>
+
+<div class="row formDonnees">
+    <div>
+        <form asp-controller="Marques" asp-action="CreateDepuisVoiture" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Nom" class="control-label">Nom de la marque</label>
+                <input asp-for="Nom" class="form-control" />
+                <span asp-validation-for="Nom" class="text-danger"></span>
+            </div>
+            <div class="form-group d-flex justify-content-center">
+                <input type="submit" value="Créer" class="boutonAction" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

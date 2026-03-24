@@ -81,6 +81,18 @@ namespace ExpressVoitures.Controllers
             return View(finition);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateDepuisVoiture(Finition finition)
+        {
+            if (!ModelState.IsValid)
+                return View("_CreatePartial", finition);
+
+            await _finitionService.CreerAsync(finition);
+
+            // Redirection en sélectionnant automatiquement la nouvelle finition
+            return RedirectToAction("CreateSimple", "Voitures", new { idFinitionCree = finition.Id });
+        }
+
         // GET: Finitions/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {

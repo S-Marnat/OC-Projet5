@@ -1,31 +1,320 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&display=swap');
+
+:root {
+    /* -- Couleurs -- */
+    --color-background: #FFFFFF;
+    --color-action: #D9A963;
+    --color-action-hover: #B99056;
+    --color-font: #2C1810;
+    --color-font-clair: #796157;
+    --color-font-noir: #000000;
+    --color-font-action-hover: #FFFFFF;
+    --color-modifier: #929292;
+    --color-supprimer: #D70000;
+    /* -- Texte -- */
+    /* Police */
+    --font-family-title: 'Libre Baskerville', serif;
+    --font-family-logo: 'Libre Baskerville', serif;
+    --font-family-information: 'Libre Baskerville', serif;
+    --font-family-body: 'DM Sans', sans-serif;
+    /* Epaisseur*/
+    --font-weight-title: 700;
+    --font-weight-logo: 700;
+    --font-weight-nav-actif: 700;
+    --font-weight-body: 400;
+    --font-weight-h1: 400;
+    --font-weight-button-hover: 500;
+    /* Style */
+    --font-style-h1: italic;
+    --font-style-h1-authentification: normal;
+    --font-style-body: normal;
+    /* Taille */
+    --font-size-h1-authentification: 2.6rem;
+    --font-size-h1: 2.75rem;
+    --font-size-logo: 1.25rem;
+    --font-size-h2-prix: 1.75rem;
+    --font-size-title: 1.375rem;
+    --font-size-body: 1.125rem;
+    --font-size-information: 1rem;
+    --font-size-button: 1rem;
+    --font-size-naviguer: 0.875rem;
+    /* Hauteur de ligne */
+    --line-height-body: 100%;
+    /* Espacement des lettres */
+    --letter-spacing-body: 0;
+    --letter-spacing-logo: -0.07em;
+    /*Alignement*/
+    --text-align-h1: center;
+    /*Décoration*/
+    --text-decoration-modification: underline;
+    --text-decoration-naviguer: none;
+    --text-decoration-style-modification: solid;
+    /* -- Blocs -- */
+    /*Ombres et flous*/
+    --box-shadow-form: 0 0.25rem 1rem 0 #0000000F;
+    /*Bordures*/
+    --border-input: 1px solid;
+    --border-button: none;
+    --border-radius-form: 0.625rem;
+    --border-radius-input: 0.19rem;
+    --border-radius-button: 0.31rem;
+}
+
 html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
+    font-size: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    background: var(--color-background);
+    font-family: var(--font-family-body);
+    color: var(--color-font);
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-body);
+    font-style: var(--font-style-body);
+    line-height: var(--line-height-body);
+    letter-spacing: var(--letter-spacing-body);
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+main {
+    padding: 8.75rem 3.75rem;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+h1, h2, h3 {
+    font-family: var(--font-family-title);
+}
+
+h1 {
+    color: var(--color-font-clair);
+    font-style: var(--font-style-h1);
+    font-size: var(--font-size-h1);
+    text-align: var(--text-align-h1);
+    font-weight: var(--font-weight-h1);
+}
+
+h2 {
+    font-size: var(--font-size-title);
+    font-weight: var(--font-weight-title);
+}
+
+header nav {
+    height: 5.7rem;
+}
+
+header .navbar-nav .nav-link:focus, header .navbar-nav .nav-link:hover, header .navbar-nav .nav-link.active,
+header .dropdown-item:focus, header .dropdown-item:hover, header .dropdown-item.active {
+    font-weight: var(--font-weight-nav-actif);
+    background-color: transparent;
+    color: var(--color-font);
+}
+
+.formDonnees form {
+    box-shadow: var(--box-shadow-form);
+    padding: 1.7rem 3.75rem 3.75rem 3.75rem;
+    border-radius: var(--border-radius-form);
+}
+
+.formDonnees form label, .authentification form label {
+    margin-top: 2.3rem;
+    margin-bottom: 0.94rem;
+}
+
+.formDonnees form input, .formDonnees form select, .authentification form input {
+    border: var(--border-input);
+    border-color: var(--color-font);
+    border-radius: var(--border-radius-input);
+}
+
+.boutonAction, a.boutonAction {
+    border: var(--border-button) !important;
+    border-radius: var(--border-radius-button) !important;
+    padding: 0.94rem 1.44rem !important;
+    margin: 1.25rem 0.625rem !important;
+    background: var(--color-action) !important;
+    font-size: var(--font-size-button) !important;
+    text-align: center !important;
+}
+
+a.boutonAction {
+    text-decoration: none;
+    display: inline-block;
+    color: var(--color-font);
+}
+
+form .boutonAction {
+    margin-top: 2.875rem !important;
+}
+
+.boutonAction:focus, .boutonAction:active, .boutonAction:hover,
+a.boutonAction:focus, a.boutonAction:active, a.boutonAction:hover {
+    border: var(--border-button) !important;
+    background: var(--color-action-hover) !important;
+    color: var(--color-font-action-hover) !important;
+    font-weight: var(--font-weight-button-hover) !important;
+}
+
+.logo {
+    font-family: var(--font-family-logo);
+    font-weight: var(--font-weight-logo);
+    font-size: var(--font-size-logo);
+    letter-spacing: var(--letter-spacing-logo);
+}
+
+.information {
+    font-family: var(--font-family-information);
+    font-size: var(--font-size-information);
+    margin: 1.875rem 0;
+    text-align: center;
+}
+
+.modification {
+    text-decoration: var(--text-decoration-modification);
+    text-decoration-style: var(--text-decoration-style-modification);
+}
+
+.modifier {
+    color: var(--color-modifier);
+}
+
+.supprimer {
+    color: var(--color-supprimer);
+}
+
+.naviguer {
+    font-size: var(--font-size-naviguer);
+    color: var(--color-font-clair);
+    margin-bottom: 4rem;
+    text-decoration: var(--text-decoration-naviguer);
+}
+
+.naviguer:hover {
+    font-weight: var(--font-weight-nav-actif);
+    color: var(--color-font-noir);
+}
+
+.annonces {
+    padding-top: 5rem;
+}
+
+.thumbnail {
+    padding: 0.7rem;
+    margin: 1.25rem;
+}
+
+.thumbnail h2 {
+    padding-bottom: 0.625rem;
+}
+
+.thumbnail .texte {
+    padding-left: 0.625rem;
+    text-align: left;
+}
+
+.thumbnail .texte p, .details .texte p {
+    color: var(--color-font-clair);
+}
+
+.thumbnailCliquable .thumbnail:hover {
+    border: 0.2rem solid var(--color-action);
+    border-radius: 0.3rem;
+}
+
+.thumbnailCliquable, .thumbnailCliquable:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.details .image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+}
+
+.details .image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.details .texte {
+    text-align: left;
+    padding-left: 3.125rem;
+}
+
+.details .information {
+    text-align: left;
+}
+
+.details .information p {
+    color: var(--color-font-noir);
+    margin: 0;
+}
+
+.details .controles {
+    display: inline-flex;
+    gap: 1.25rem;
+    margin-top: 0.625rem;
+    margin-bottom: 3.75rem;
+}
+
+.details .controles a {
+    text-align: left;
+}
+
+.details .controles a:hover {
+    font-weight: 700;
+}
+
+.details h2 {
+    font-size: var(--font-size-h2-prix);
+    margin-bottom: 3.125rem;
+}
+
+.details .texte p {
+    margin-bottom: 2.2rem;
+}
+
+.pageInformative .boutonAction {
+    margin-top: 6.25rem;
+}
+
+.nomVoiture {
+    font-size: 1.25rem;
+}
+
+.titreAuthentification {
+    font-size: var(--font-size-h1-authentification);
+    font-family: var(--font-family-logo);
+    font-style: var(--font-style-h1-authentification);
+    font-weight: var(--font-weight-logo);
+    letter-spacing: var(--letter-spacing-logo);
+    color: var(--color-font);
+}
+
+.authentification form {
+    box-shadow: none;
+    margin: 3.75rem;
+}
+
+.authentification form input {
+    margin-top: 0.3rem;
+    margin-bottom: 2.5rem;
+    height: 4rem;
+}
+
+.authentification .ligneBoutons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.6rem;
+}
+
+.authentification .ligneBoutons span {
+    padding-top: 1.25rem;
+}
+
+.rouge {
+    color: red;
 }

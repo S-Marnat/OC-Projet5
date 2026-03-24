@@ -75,6 +75,18 @@ namespace ExpressVoitures.Controllers
             return View(marque);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateDepuisVoiture(Marque marque)
+        {
+            if (!ModelState.IsValid)
+                return View("_CreatePartial", marque);
+
+            await _marqueService.CreerAsync(marque);
+
+            // Redirection en sélectionnant automatiquement la nouvelle marque
+            return RedirectToAction("CreateSimple", "Voitures", new { idMarqueCree = marque.Id });
+        }
+
         // GET: Marques/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {

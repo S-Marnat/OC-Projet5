@@ -572,6 +572,57 @@ namespace ExpressVoitures.Tests.ExpressVoitures.TestsUnitaires
         }
 
         [Fact]
+        public async Task ObtenirParPresenceCodeVinAsync_Retourne2Voitures()
+        {
+            // Arrange
+            var context = GetInMemoryDbContext();
+
+            context.Voitures.Add(voiture1);
+            context.Voitures.Add(voiture2);
+            await context.SaveChangesAsync();
+
+            var service = new VoitureService(context);
+
+            // Act
+            var resultat = await service.ObtenirParPresenceCodeVinAsync();
+
+            // Assert
+            Assert.Equal(2, resultat.Count);
+            Assert.Contains(resultat, f => f.CodeVin == "00000000000000001");
+            Assert.Contains(resultat, f => f.CodeVin == "00000000000000002");
+        }
+
+        [Fact]
+        public async Task ObtenirParPresenceCodeVinAsync_RetourneAucuneVoiture()
+        {
+            // Arrange
+            var voiture4 = new Voiture
+            {
+                Id = 4,
+                Annee = 2024,
+                VoitureReparee = false,
+                AnnoncePubliee = false,
+                VoitureVendue = false,
+                IdMarque = 1,
+                IdModele = 1,
+                IdFinition = 1
+            };
+
+            var context = GetInMemoryDbContext();
+
+            context.Voitures.Add(voiture4);
+            await context.SaveChangesAsync();
+
+            var service = new VoitureService(context);
+
+            // Act
+            var resultat = await service.ObtenirParPresenceCodeVinAsync();
+
+            // Assert
+            Assert.Empty(resultat);
+        }
+
+        [Fact]
         public async Task ObtenirToutesAsync_RetourneToutesLesVoitures()
         {
             // Arrange
