@@ -15,7 +15,7 @@
         <div class="row">
             @foreach (var item in Model)
             {
-                <div class="col-md-6">
+                <section class="col-md-6">
                     <a asp-controller="Voitures" asp-action="DetailsSimple" asp-route-id="@item.Id" class="thumbnailCliquable">
                         <div class="row align-items-center thumbnail">
                             
@@ -24,12 +24,11 @@
                                 @if (!string.IsNullOrEmpty(item.Image))
                                 {
                                     <img src="~/images/voitures/@item.Image"
-                                         alt="Photo de la voiture"
-                                         style="width:100%; height:auto; border-radius:5px;" />
+                                         alt="Voiture en vente" />
                                 }
                                 else
                                 {
-                                    <span>Aucune image</span>
+                                    <p class="text-center">Aucune image disponible</p>
                                 }
                             </div>
 
@@ -44,7 +43,7 @@
 
                         </div>
                     </a>
-                </div>
+                </section>
             }
         </div>
     </div>

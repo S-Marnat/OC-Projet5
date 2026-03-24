@@ -60,6 +60,9 @@
     --border-radius-button: 0.31rem;
 }
 
+
+/* -- Général -- */
+
 html {
     position: relative;
     min-height: 100%;
@@ -98,6 +101,20 @@ h2 {
     font-weight: var(--font-weight-title);
 }
 
+.logo {
+    font-family: var(--font-family-logo);
+    font-weight: var(--font-weight-logo);
+    font-size: var(--font-size-logo);
+    letter-spacing: var(--letter-spacing-logo);
+}
+
+.rouge {
+    color: red;
+}
+
+
+/* Menu de navigation */
+
 header nav {
     height: 5.7rem;
 }
@@ -108,6 +125,9 @@ header .dropdown-item:focus, header .dropdown-item:hover, header .dropdown-item.
     background-color: transparent;
     color: var(--color-font);
 }
+
+
+/* Formulaires et boutons */
 
 .formDonnees form {
     box-shadow: var(--box-shadow-form);
@@ -154,12 +174,8 @@ a.boutonAction:focus, a.boutonAction:active, a.boutonAction:hover {
     font-weight: var(--font-weight-button-hover) !important;
 }
 
-.logo {
-    font-family: var(--font-family-logo);
-    font-weight: var(--font-weight-logo);
-    font-size: var(--font-size-logo);
-    letter-spacing: var(--letter-spacing-logo);
-}
+
+/* Textes et liens de navigation */
 
 .information {
     font-family: var(--font-family-information);
@@ -193,6 +209,9 @@ a.boutonAction:focus, a.boutonAction:active, a.boutonAction:hover {
     color: var(--color-font-noir);
 }
 
+
+/* -- Page d'accueil -- */
+
 .annonces {
     padding-top: 5rem;
 }
@@ -200,6 +219,12 @@ a.boutonAction:focus, a.boutonAction:active, a.boutonAction:hover {
 .thumbnail {
     padding: 0.7rem;
     margin: 1.25rem;
+}
+
+.thumbnail img {
+    width:100%;
+    height:auto;
+    border-radius:0.31rem;
 }
 
 .thumbnail h2 {
@@ -224,6 +249,9 @@ a.boutonAction:focus, a.boutonAction:active, a.boutonAction:hover {
     text-decoration: none;
     color: inherit;
 }
+
+
+/* -- Page simple des détails de la voiture -- */
 
 .details .image {
     width: 100%;
@@ -275,6 +303,9 @@ a.boutonAction:focus, a.boutonAction:active, a.boutonAction:hover {
     margin-bottom: 2.2rem;
 }
 
+
+/* -- Pages informatives (succès de création et de suppression de voiture) -- */
+
 .pageInformative .boutonAction {
     margin-top: 6.25rem;
 }
@@ -282,6 +313,9 @@ a.boutonAction:focus, a.boutonAction:active, a.boutonAction:hover {
 .nomVoiture {
     font-size: 1.25rem;
 }
+
+
+/* -- Page d'authentification -- */
 
 .titreAuthentification {
     font-size: var(--font-size-h1-authentification);
@@ -313,8 +347,4 @@ a.boutonAction:focus, a.boutonAction:active, a.boutonAction:hover {
 
 .authentification .ligneBoutons span {
     padding-top: 1.25rem;
-}
-
-.rouge {
-    color: red;
 }

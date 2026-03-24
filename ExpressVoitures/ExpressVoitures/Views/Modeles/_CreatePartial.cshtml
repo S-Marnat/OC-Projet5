@@ -9,15 +9,16 @@
 <div class="row formDonnees">
     <div>
         <form asp-controller="Modeles" asp-action="CreateDepuisVoiture" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger" aria-live="polite"></div>
             <div class="form-group">
                 <label asp-for="Nom" class="control-label">Nom du modèle</label>
-                <input asp-for="Nom" class="form-control" />
-                <span asp-validation-for="Nom" class="text-danger"></span>
+                <input asp-for="Nom" class="form-control" required />
+                <span asp-validation-for="Nom" class="text-danger" aria-live="polite"></span>
             </div>
             <div class="form-group">
                 <label asp-for="IdMarque" class="visually-hidden">Marque correspondant à ce modèle</label>
-                <input type="hidden" asp-for="IdMarque" id="idMarquePourModele" />
+                <input type="hidden" asp-for="IdMarque" id="idMarquePourModele" required />
+                <span asp-validation-for="IdMarque" class="text-danger" aria-live="polite"></span>
             </div>
             <div class="form-group d-flex justify-content-center">
                 <input type="submit" value="Créer" class="boutonAction" />

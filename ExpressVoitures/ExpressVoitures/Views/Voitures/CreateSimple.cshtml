@@ -11,37 +11,40 @@
 <div class="row formDonnees">
     <div class="col-md-5 mx-auto">
         <form asp-action="CreateSimple" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger" aria-live="polite"></div>
             <div class="form-group">
                 <label asp-for="PrixMiseEnVente" class="control-label">Prix de vente</label>
-                <input asp-for="PrixMiseEnVente" class="form-control" />
-                <span asp-validation-for="PrixMiseEnVente" class="text-danger"></span>
+                <input asp-for="PrixMiseEnVente" class="form-control" placeholder="100000" required />
+                <span asp-validation-for="PrixMiseEnVente" class="text-danger" aria-live="polite"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Annee" class="control-label">Année</label>
-                <select asp-for="Annee" asp-items="ViewBag.Annees" class="form-control">
+                <select asp-for="Annee" asp-items="ViewBag.Annees" class="form-control" required>
                     <option value="">Sélectionnez une année</option>
                 </select>
-                <span asp-validation-for="Annee" class="text-danger"></span>
+                <span asp-validation-for="Annee" class="text-danger" aria-live="polite"></span>
             </div>
             <div class="form-group">
                 <label asp-for="IdMarque" class="control-label">Marque</label>
-                <select asp-for="IdMarque" id="marqueSelect" class="form-control" asp-items="ViewBag.Marques">
+                <select asp-for="IdMarque" id="marqueSelect" class="form-control" asp-items="ViewBag.Marques" required>
                     <option value="">Sélectionnez une marque</option>
                 </select>
+                <span asp-validation-for="IdMarque" class="text-danger" aria-live="polite"></span>
             </div>
             <div class="form-group">
                 <label asp-for="IdModele" class="control-label">Modèle</label>
-                <select asp-for="IdModele" id="modeleSelect" class="form-control"></select>
+                <select asp-for="IdModele" id="modeleSelect" class="form-control" required></select>
+                <span asp-validation-for="IdModele" class="text-danger" aria-live="polite"></span>
             </div>
             <div class="form-group">
                 <label asp-for="IdFinition" class="control-label">Finition</label>
-                <select id="finitionSelect" asp-for="IdFinition" class="form-control"></select>
+                <select id="finitionSelect" asp-for="IdFinition" class="form-control" required></select>
+                <span asp-validation-for="IdFinition" class="text-danger" aria-live="polite"></span>
             </div>
             <div class="form-group">
                 <label asp-for="TelechargerImage" class="control-label">Visuel</label>
-                <input asp-for="TelechargerImage" class="form-control" type="file" />
-                <span asp-validation-for="TelechargerImage" class="text-danger"></span>
+                <input asp-for="TelechargerImage" class="form-control" type="file" required />
+                <span asp-validation-for="TelechargerImage" class="text-danger" aria-live="polite"></span>
             </div>
             <div class="form-group d-flex justify-content-center">
                 <input type="submit" value="Publier" class="boutonAction" />
@@ -52,13 +55,13 @@
 
 @* -- Les modales -- *@
 @* Modale pour Marque *@
-<div class="modal fade" id="modaleMarque" tabindex="-1">
+<div class="modal" id="modaleMarque" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="titreModale">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Créer une marque</h5>
+            <header class="modal-header">
+                <h2 id="titreModale" class="modal-title">Créer une marque</h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+            </header>
             <div class="modal-body">
                 @await Html.PartialAsync("~/Views/Marques/_CreatePartial.cshtml", new ExpressVoitures.Models.Marque())
             </div>
@@ -67,11 +70,11 @@
 </div>
 
 @* Modale pour Modèle *@
-<div class="modal fade" id="modaleModele" tabindex="-1">
+<div class="modal" id="modaleModele" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="titreModale">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Créer un modèle pour la marque sélectionnée</h5>
+                <h2 id="titreModale" class="modal-title">Créer un modèle pour la marque sélectionnée</h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -82,11 +85,11 @@
 </div>
 
 @* Modale pour Finition *@
-<div class="modal fade" id="modaleFinition" tabindex="-1">
+<div class="modal" id="modaleFinition" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="titreModale">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Créer une finition pour le modèle sélectionné</h5>
+                <h2 id="titreModale" class="modal-title">Créer une finition pour le modèle sélectionné</h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
