@@ -2,6 +2,8 @@
 using ExpressVoitures.Interfaces;
 using ExpressVoitures.Models;
 using Humanizer.Localisation;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace ExpressVoitures.Controllers
 {
+    [Authorize]
     public class VoituresController : Controller
     {
         private readonly IVoitureService _voitureService;
@@ -20,9 +23,10 @@ namespace ExpressVoitures.Controllers
         private readonly IFinitionService _finitionService;
         private readonly IReparationService _reparationService;
         private readonly IVenteService _venteService;
+        private readonly UserManager<IdentityUser> _userManager;
 
         public VoituresController(IVoitureService voitureService, IMarqueService marqueService, IModeleService modeleService,
-            IFinitionService finitionService, IReparationService reparationService, IVenteService venteService)
+            IFinitionService finitionService, IReparationService reparationService, IVenteService venteService, UserManager<IdentityUser> userManager)
         {
             _voitureService = voitureService;
             _marqueService = marqueService;
@@ -30,9 +34,11 @@ namespace ExpressVoitures.Controllers
             _finitionService = finitionService;
             _reparationService = reparationService;
             _venteService = venteService;
+            _userManager = userManager;
         }
 
         // GET: Voitures
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Index()
         {
             var voitures = await _voitureService.ObtenirToutesAsync();
@@ -40,6 +46,7 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Voitures/Details/5
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -56,6 +63,7 @@ namespace ExpressVoitures.Controllers
             return View(voiture);
         }
 
+        [AllowAnonymous]
         public async Task<IActionResult> DetailsSimple(int? id)
         {
             if (id == null)
@@ -73,6 +81,7 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Voitures/Create
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Create()
         {
             ListeAnnees();
@@ -97,6 +106,7 @@ namespace ExpressVoitures.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Create([Bind("Id,CodeVin,Annee,Image,TelechargerImage,Description,DateAchat,PrixAchat,VoitureReparee,DateMiseEnVente,PrixMiseEnVente,AnnoncePubliee,VoitureVendue,IdMarque,IdModele,IdFinition")] Voiture voiture)
         {
             if (voiture.CodeVin != null)
@@ -116,25 +126,11 @@ namespace ExpressVoitures.Controllers
 
             if (ModelState.IsValid)
             {
-                if (voiture.TelechargerImage != null)
+                if (!await TentativeTelechargementImageAsync(voiture))
                 {
-                    try
-                    {
-                        voiture.Image = await TelechargerImageAsync(voiture);
-                    }
-                    catch (Exception exception)
-                    {
-                        if (exception.Message == "EXTENSION_INVALIDE")
-                            ModelState.AddModelError("TelechargerImage", "Seuls les fichiers JPG et PNG sont autorisés.");
-
-                        if (exception.Message == "TAILLE_INVALIDE")
-                            ModelState.AddModelError("TelechargerImage", "La taille du fichier ne doit pas dépasser 2 Mo.");
-
-                        ListeAnnees();
-                        await ListesMarquesModelesFinitions();
-                        return View(voiture);
-                    }
+                    return await RetournerVueAvecListes(voiture);
                 }
+                voiture.IdUtilisateur = _userManager.GetUserId(User);
                 await _voitureService.CreerAsync(voiture);
                 return View("CreateSucces");
             }
@@ -150,26 +146,12 @@ namespace ExpressVoitures.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (voiture.TelechargerImage != null)
+                if (!await TentativeTelechargementImageAsync(voiture))
                 {
-                    try
-                    {
-                        voiture.Image = await TelechargerImageAsync(voiture);
-                    }
-                    catch (Exception exception)
-                    {
-                        if (exception.Message == "EXTENSION_INVALIDE")
-                            ModelState.AddModelError("TelechargerImage", "Seuls les fichiers JPG et PNG sont autorisés.");
-
-                        if (exception.Message == "TAILLE_INVALIDE")
-                            ModelState.AddModelError("TelechargerImage", "La taille du fichier ne doit pas dépasser 2 Mo.");
-
-                        ListeAnnees();
-                        await ListesMarquesModelesFinitions();
-                        return View(voiture);
-                    }
+                    return await RetournerVueAvecListes(voiture);
                 }
                 voiture.AnnoncePubliee = true;
+                voiture.IdUtilisateur = _userManager.GetUserId(User);
                 await _voitureService.CreerAsync(voiture);
                 return View("CreateSucces");
             }
@@ -180,6 +162,7 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Voitures/Edit/5
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -211,6 +194,13 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
+            // Vérifier l'autorisation
+            if (!User.IsInRole("Administrateur"))
+            {
+                if (voiture.IdUtilisateur != _userManager.GetUserId(User))
+                    return Forbid();
+            }
+
             ListeAnnees();
             await ListesMarquesModelesFinitions();
             return View(voiture);
@@ -221,6 +211,7 @@ namespace ExpressVoitures.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,CodeVin,Annee,Image,TelechargerImage,Description,DateAchat,PrixAchat,VoitureReparee,DateMiseEnVente,PrixMiseEnVente,AnnoncePubliee,VoitureVendue,IdMarque,IdModele,IdFinition")] Voiture voiture)
         {
             if (id != voiture.Id)
@@ -247,24 +238,9 @@ namespace ExpressVoitures.Controllers
             {
                 try
                 {
-                    if (voiture.TelechargerImage != null)
+                    if (!await TentativeTelechargementImageAsync(voiture))
                     {
-                        try
-                        {
-                            voiture.Image = await TelechargerImageAsync(voiture);
-                        }
-                        catch (Exception exception)
-                        {
-                            if (exception.Message == "EXTENSION_INVALIDE")
-                                ModelState.AddModelError("TelechargerImage", "Seuls les fichiers JPG et PNG sont autorisés.");
-
-                            if (exception.Message == "TAILLE_INVALIDE")
-                                ModelState.AddModelError("TelechargerImage", "La taille du fichier ne doit pas dépasser 2 Mo.");
-
-                            ListeAnnees();
-                            await ListesMarquesModelesFinitions();
-                            return View(voiture);
-                        }
+                        return await RetournerVueAvecListes(voiture);
                     }
                     await _voitureService.MettreAJourAsync(voiture);
                 }
@@ -296,30 +272,32 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
+            var voitureOriginale = await _voitureService.ObtenirParIdAsync(id);
+
+            if (voitureOriginale == null)
+            {
+                return NotFound();
+            }
+
+            // Vérifier l'autorisation
+            if (!User.IsInRole("Administrateur"))
+            {
+                if (voitureOriginale.IdUtilisateur != _userManager.GetUserId(User))
+                {
+                    return Forbid();
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    if (voiture.TelechargerImage != null)
+                    if (!await TentativeTelechargementImageAsync(voiture))
                     {
-                        try
-                        {
-                            voiture.Image = await TelechargerImageAsync(voiture);
-                        }
-                        catch (Exception exception)
-                        {
-                            if (exception.Message == "EXTENSION_INVALIDE")
-                                ModelState.AddModelError("TelechargerImage", "Seuls les fichiers JPG et PNG sont autorisés.");
-
-                            if (exception.Message == "TAILLE_INVALIDE")
-                                ModelState.AddModelError("TelechargerImage", "La taille du fichier ne doit pas dépasser 2 Mo.");
-
-                            ListeAnnees();
-                            await ListesMarquesModelesFinitions();
-                            return View(voiture);
-                        }
+                        return await RetournerVueAvecListes(voiture);
                     }
                     voiture.AnnoncePubliee = true;
+                    voiture.IdUtilisateur = voitureOriginale.IdUtilisateur;
                     await _voitureService.MettreAJourAsync(voiture);
                 }
                 catch (DbUpdateConcurrencyException)
@@ -355,6 +333,13 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
+            // Vérifier l'autorisation
+            if (!User.IsInRole("Administrateur"))
+            {
+                if (voiture.IdUtilisateur != _userManager.GetUserId(User))
+                    return Forbid();
+            }
+
             return View(voiture);
         }
 
@@ -363,8 +348,21 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            // Supprimer l'image de l'application si présente
             var voiture = await _voitureService.ObtenirParIdAsync(id);
+
+            if (voiture == null)
+            {
+                return NotFound();
+            }
+
+            // Vérifier l'autorisation
+            if (!User.IsInRole("Administrateur"))
+            {
+                if (voiture.IdUtilisateur != _userManager.GetUserId(User))
+                    return Forbid();
+            }
+
+            // Supprimer l'image de l'application si présente
             if (!string.IsNullOrEmpty(voiture.Image))
             {
                 var cheminImage = Path.Combine("wwwroot/images/voitures", voiture.Image);
@@ -449,35 +447,39 @@ namespace ExpressVoitures.Controllers
 
             ViewBag.FinitionsParModele = finitionsParModele;
         }
-
-        private async Task<string?> TelechargerImageAsync(Voiture voiture)
+        private async Task<IActionResult> RetournerVueAvecListes(Voiture voiture)
         {
-            // Génération d'un nom de fichier unique
-            var nomImage = Guid.NewGuid() + Path.GetExtension(voiture.TelechargerImage.FileName);
+            ListeAnnees();
+            await ListesMarquesModelesFinitions();
+            return View(voiture);
+        }
 
-            // Vérifier l'extension du fichier
-            var extensionsAutorisees = new[] { ".jpg", ".jpeg", ".png" };
-            var extension = Path.GetExtension(voiture.TelechargerImage.FileName).ToLower();
+        private async Task<bool> TentativeTelechargementImageAsync(Voiture voiture)
+        {
+            if (voiture.TelechargerImage == null)
+                return true;
 
-            if (!extensionsAutorisees.Contains(extension))
-                throw new Exception("EXTENSION_INVALIDE");
-
-            // Vérifier la taille du fichier
-            long tailleMax = 2 * 1024 * 1024;
-
-            if (voiture.TelechargerImage.Length > tailleMax)
-                throw new Exception("TAILLE_INVALIDE");
-
-            // Construction du chemin de l'image
-            var nomChemin = Path.Combine("wwwroot/images/voitures", nomImage);
-
-            // Création du fichier physique dans le projet
-            using (var stream = new FileStream(nomChemin, FileMode.Create))
+            try
             {
-                await voiture.TelechargerImage.CopyToAsync(stream);
+                voiture.Image = await _voitureService.TelechargerImageAsync(voiture.TelechargerImage);
+                return true;
             }
+            catch (Exception exception)
+            {
+                if (exception.Message == "EXTENSION_INVALIDE")
+                    ModelState.AddModelError("TelechargerImage", "Seuls les fichiers JPG et PNG sont autorisés.");
 
-            return nomImage;
+                if (exception.Message == "TAILLE_INVALIDE")
+                    ModelState.AddModelError("TelechargerImage", "La taille du fichier ne doit pas dépasser 2 Mo.");
+
+                if (exception.Message == "MIME_INVALIDE")
+                    ModelState.AddModelError("TelechargerImage", "Le fichier n'est pas une image valide.");
+
+                if (exception.Message == "FICHIER_VIDE")
+                    ModelState.AddModelError("TelechargerImage", "Aucun fichier n'a été envoyé.");
+
+                return false;
+            }
         }
     }
 }

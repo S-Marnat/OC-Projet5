@@ -9,9 +9,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ExpressVoitures.Controllers
 {
+    [Authorize(Roles = "Administrateur")]
     public class VentesController : Controller
     {
         private readonly IVenteService _venteService;

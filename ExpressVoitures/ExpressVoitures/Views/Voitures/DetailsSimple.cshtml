@@ -1,4 +1,11 @@
 ﻿@model ExpressVoitures.Models.Voiture
+@using System.Security.Claims
+
+@{
+    bool peutModifier = User.IsInRole("Administrateur") ||
+                        (User.Identity.IsAuthenticated &&
+                         User.FindFirst(ClaimTypes.NameIdentifier)?.Value == Model.IdUtilisateur);
+}
 
 @{
     ViewData["Title"] = "Détails de la voiture";
@@ -32,25 +39,28 @@
         <div class="col-5">
 
             @*Contrôles*@
-            <div class="information">
-                <p>Vous avez publié cette annonce, vous pouvez la :</p>
+            @if (peutModifier)
+            {
+                <div class="information">
+                    <p>Vous avez publié cette annonce, vous pouvez la :</p>
 
-                <div class="controles">
-                    <a asp-controller="Voitures"
-                           asp-action="EditSimple"
-                           asp-route-id="@Model.Id"
-                           class="modification modifier">
-                        modifier
-                    </a>
+                    <div class="controles">
+                        <a asp-controller="Voitures"
+                               asp-action="EditSimple"
+                               asp-route-id="@Model.Id"
+                               class="modification modifier">
+                            modifier
+                        </a>
 
-                    <a asp-controller="Voitures"
-                           asp-action="Delete"
-                           asp-route-id="@Model.Id"
-                           class="modification supprimer">
-                        supprimer
-                    </a>
+                        <a asp-controller="Voitures"
+                               asp-action="Delete"
+                               asp-route-id="@Model.Id"
+                               class="modification supprimer">
+                            supprimer
+                        </a>
+                    </div>
                 </div>
-            </div>
+            }
 
             @*Informations de la voiture*@
             <div class="texte">

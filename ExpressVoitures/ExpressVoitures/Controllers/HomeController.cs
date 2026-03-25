@@ -2,6 +2,7 @@ using ExpressVoitures.Interfaces;
 using ExpressVoitures.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ExpressVoitures.Controllers
 {

@@ -9,9 +9,11 @@ using ExpressVoitures.Data;
 using ExpressVoitures.Models;
 using ExpressVoitures.Interfaces;
 using ExpressVoitures.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ExpressVoitures.Controllers
 {
+    [Authorize]
     public class FinitionsController : Controller
     {
         private readonly IFinitionService _finitionService;
@@ -26,6 +28,7 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Finitions
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Index()
         {
             var finitions = await _finitionService.ObtenirToutesAsync();
@@ -33,6 +36,7 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Finitions/Details/5
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -50,6 +54,7 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Finitions/Create
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Create()
         {
             var modeles = await _modeleService.ObtenirTousAsync();
@@ -62,6 +67,7 @@ namespace ExpressVoitures.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Create([Bind("Id,Nom,IdModele")] Finition finition)
         {
             bool finitionExiste;
@@ -82,6 +88,7 @@ namespace ExpressVoitures.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateDepuisVoiture(Finition finition)
         {
             if (!ModelState.IsValid)
@@ -94,6 +101,7 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Finitions/Edit/5
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -116,6 +124,7 @@ namespace ExpressVoitures.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Nom,IdModele")] Finition finition)
         {
             if (id != finition.Id)
@@ -155,6 +164,7 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Finitions/Delete/5
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -182,6 +192,7 @@ namespace ExpressVoitures.Controllers
         // POST: Finitions/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             await _finitionService.SupprimerAsync(id);

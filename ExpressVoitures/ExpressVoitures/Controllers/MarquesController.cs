@@ -9,9 +9,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ExpressVoitures.Controllers
 {
+    [Authorize]
     public class MarquesController : Controller
     {
         private readonly IMarqueService _marqueService;
@@ -24,6 +26,7 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Marques
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Index()
         {
             var marques = await _marqueService.ObtenirToutesAsync();
@@ -31,6 +34,7 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Marques/Details/5
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -48,6 +52,7 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Marques/Create
+        [Authorize(Roles = "Administrateur")]
         public IActionResult Create()
         {
             return View();
@@ -58,6 +63,7 @@ namespace ExpressVoitures.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Create([Bind("Id,Nom")] Marque marque)
         {
             bool marqueExiste;
@@ -76,6 +82,7 @@ namespace ExpressVoitures.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateDepuisVoiture(Marque marque)
         {
             if (!ModelState.IsValid)
@@ -88,6 +95,7 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Marques/Edit/5
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -108,6 +116,7 @@ namespace ExpressVoitures.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Nom")] Marque marque)
         {
             if (id != marque.Id)
@@ -145,6 +154,7 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Marques/Delete/5
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -172,6 +182,7 @@ namespace ExpressVoitures.Controllers
         // POST: Marques/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             await _marqueService.SupprimerAsync(id);

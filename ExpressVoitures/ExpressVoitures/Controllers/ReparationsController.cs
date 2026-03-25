@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using ExpressVoitures.Data;
 using ExpressVoitures.Models;
 using ExpressVoitures.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ExpressVoitures.Controllers
 {
+    [Authorize(Roles = "Administrateur")]
     public class ReparationsController : Controller
     {
         private readonly IReparationService _reparationService;

@@ -45,22 +45,28 @@
                         <li class="nav-item">
                             <a class="nav-link px-4 @PageActive("Home", "Index")" asp-area="" asp-controller="Home" asp-action="Index">Accueil</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link px-4 @PageActive("Voitures", "CreateSimple")" asp-area="" asp-controller="Voitures" asp-action="CreateSimple">Ajouter une voiture</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle px-4 @InventaireActif()" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Inventaire
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item @PageActive("Voitures", "Index")" asp-area="" asp-controller="Voitures" asp-action="Index">Voitures</a></li>
-                                <li><a class="dropdown-item @PageActive("Marques", "Index")" asp-area="" asp-controller="Marques" asp-action="Index">Marques</a></li>
-                                <li><a class="dropdown-item @PageActive("Modeles", "Index")" asp-area="" asp-controller="Modeles" asp-action="Index">Modèles</a></li>
-                                <li><a class="dropdown-item @PageActive("Finitions", "Index")" asp-area="" asp-controller="Finitions" asp-action="Index">Finitions</a></li>
-                                <li><a class="dropdown-item @PageActive("Reparations", "Index")" asp-area="" asp-controller="Reparations" asp-action="Index">Réparations</a></li>
-                                <li><a class="dropdown-item @PageActive("Ventes", "Index")" asp-area="" asp-controller="Ventes" asp-action="Index">Ventes</a></li>
-                            </ul>
-                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link px-4 @PageActive("Voitures", "CreateSimple")" asp-area="" asp-controller="Voitures" asp-action="CreateSimple">Ajouter une voiture</a>
+                            </li>
+                        }
+                        @if (User.IsInRole("Administrateur"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle px-4 @InventaireActif()" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Inventaire
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item @PageActive("Voitures", "Index")" asp-area="" asp-controller="Voitures" asp-action="Index">Voitures</a></li>
+                                    <li><a class="dropdown-item @PageActive("Marques", "Index")" asp-area="" asp-controller="Marques" asp-action="Index">Marques</a></li>
+                                    <li><a class="dropdown-item @PageActive("Modeles", "Index")" asp-area="" asp-controller="Modeles" asp-action="Index">Modèles</a></li>
+                                    <li><a class="dropdown-item @PageActive("Finitions", "Index")" asp-area="" asp-controller="Finitions" asp-action="Index">Finitions</a></li>
+                                    <li><a class="dropdown-item @PageActive("Reparations", "Index")" asp-area="" asp-controller="Reparations" asp-action="Index">Réparations</a></li>
+                                    <li><a class="dropdown-item @PageActive("Ventes", "Index")" asp-area="" asp-controller="Ventes" asp-action="Index">Ventes</a></li>
+                                </ul>
+                            </li>
+                        }
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>

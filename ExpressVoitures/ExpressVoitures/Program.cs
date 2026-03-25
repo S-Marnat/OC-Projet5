@@ -12,9 +12,22 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddIdentityCore<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultSignInScheme = IdentityConstants.ApplicationScheme;
+})
+.AddCookie(IdentityConstants.ApplicationScheme);
+
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
 builder.Services.AddScoped<IFinitionService, FinitionService>();
 builder.Services.AddScoped<IHomeService, HomeService>();
@@ -25,6 +38,81 @@ builder.Services.AddScoped<IVenteService, VenteService>();
 builder.Services.AddScoped<IVoitureService, VoitureService>();
 
 var app = builder.Build();
+
+// Rôle Administrateur
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
+    // Créer le rôle Administrateur
+    if (!await roleManager.RoleExistsAsync("Administrateur"))
+    {
+        await roleManager.CreateAsync(new IdentityRole("Administrateur"));
+    }
+
+    // Créer un admin local si besoin
+    var adminEmail = "admin@expressvoitures.com";
+    var adminPassword = "Password123$";
+
+    var user = await userManager.FindByEmailAsync(adminEmail);
+
+    if (user == null)
+    {
+        user = new IdentityUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true
+        };
+
+        await userManager.CreateAsync(user, adminPassword);
+    }
+
+    // Ajouter l’utilisateur au rôle
+    if (!await userManager.IsInRoleAsync(user, "Administrateur"))
+    {
+        await userManager.AddToRoleAsync(user, "Administrateur");
+    }
+}
+
+if (app.Environment.IsProduction())
+{
+    using var scope = app.Services.CreateScope();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
+    // Créer le rôle Administrateur
+    if (!await roleManager.RoleExistsAsync("Administrateur"))
+    {
+        await roleManager.CreateAsync(new IdentityRole("Administrateur"));
+    }
+
+    // Créer un admin local si besoin
+    var adminEmail = Environment.GetEnvironmentVariable("ROOT_EMAIL");
+    var adminPassword = Environment.GetEnvironmentVariable("ROOT_PASSWORD");
+
+    var user = await userManager.FindByEmailAsync(adminEmail);
+
+    if (user == null)
+    {
+        user = new IdentityUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true
+        };
+
+        await userManager.CreateAsync(user, adminPassword);
+    }
+
+    // Ajouter l’utilisateur au rôle
+    if (!await userManager.IsInRoleAsync(user, "Administrateur"))
+    {
+        await userManager.AddToRoleAsync(user, "Administrateur");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -41,6 +129,7 @@ else
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();

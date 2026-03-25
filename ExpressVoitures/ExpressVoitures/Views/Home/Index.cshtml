@@ -7,9 +7,12 @@
 <div class="text-center">
     <h1 class="display-4">Nos voitures</h1>
 
-    <div class="text-center">
-        <a asp-controller="Voitures" asp-action="CreateSimple" class="boutonAction">+ Ajouter une voiture</a>
-    </div>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="text-center">
+            <a asp-controller="Voitures" asp-action="CreateSimple" class="boutonAction">+ Ajouter une voiture</a>
+        </div>
+    }
 
     <div class="container-fluid annonces">
         <div class="row">

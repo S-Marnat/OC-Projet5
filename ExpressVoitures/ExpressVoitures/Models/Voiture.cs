@@ -55,6 +55,7 @@ namespace ExpressVoitures.Models
         public Vente? Vente { get; set; }
 
         public List<Reparation> Reparations { get; set; } = new();
+        public string? IdUtilisateur { get; set; }
 
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

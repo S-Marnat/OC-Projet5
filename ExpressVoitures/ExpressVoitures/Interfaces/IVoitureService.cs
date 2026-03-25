@@ -20,5 +20,6 @@ namespace ExpressVoitures.Interfaces
         Task<List<Voiture>> ObtenirParModeleAsync(int idModele);
         Task<List<Voiture>> ObtenirParFinitionAsync(int idFinition);
         Task<List<Voiture>> ObtenirParPresenceCodeVinAsync();
+        Task<string> TelechargerImageAsync(IFormFile fichier);
     }
 }
