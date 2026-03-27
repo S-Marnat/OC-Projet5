@@ -66,11 +66,9 @@ namespace ExpressVoitures.Controllers
         [Authorize(Roles = "Administrateur")]
         public async Task<IActionResult> Create([Bind("Id,Nom")] Marque marque)
         {
-            bool marqueExiste;
-            marqueExiste = await _marqueService.NomExisteAsync(marque.Nom);
-            if (marqueExiste)
+            if (await _marqueService.NomExisteAsync(marque.Nom))
             {
-                ModelState.AddModelError("", "Une marque portant ce nom existe déjà.");
+                ModelState.AddModelError("Nom", "Une marque portant ce nom existe déjà.");
             }
 
             if (ModelState.IsValid)
@@ -85,8 +83,11 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateDepuisVoiture(Marque marque)
         {
-            if (!ModelState.IsValid)
-                return View("_CreatePartial", marque);
+            if (await _marqueService.NomExisteAsync(marque.Nom))
+            {
+                TempData["ErreurMarque"] = "Une marque portant ce nom existe déjà.";
+                return RedirectToAction("CreateSimple", "Voitures");
+            }
 
             await _marqueService.CreerAsync(marque);
 

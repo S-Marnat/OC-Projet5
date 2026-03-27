@@ -91,13 +91,17 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateDepuisVoiture(Finition finition)
         {
-            if (!ModelState.IsValid)
-                return View("_CreatePartial", finition);
+            if (await _finitionService.ExistePourModeleAsync(finition.Nom, finition.IdModele))
+            {
+                TempData["ErreurFinition"] = "Une finition portant ce nom existe déjà pour le modèle sélectionné.";
+                return RedirectToAction("CreateSimple", "Voitures");
+            }
 
             await _finitionService.CreerAsync(finition);
 
             // Redirection en sélectionnant automatiquement la nouvelle finition
-            return RedirectToAction("CreateSimple", "Voitures", new { idFinitionCree = finition.Id });
+            var modele = await _modeleService.ObtenirParIdAsync(finition.IdModele);
+            return RedirectToAction("CreateSimple", "Voitures", new { idMarqueCree = modele.IdMarque, idModeleCree = finition.IdModele, idFinitionCree = finition.Id });
         }
 
         // GET: Finitions/Edit/5

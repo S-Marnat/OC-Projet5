@@ -13,9 +13,9 @@
         <form asp-action="CreateSimple" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger" aria-live="polite"></div>
             <div class="form-group">
-                <label asp-for="PrixMiseEnVente" class="control-label">Prix de vente</label>
-                <input asp-for="PrixMiseEnVente" class="form-control" placeholder="100000" required />
-                <span asp-validation-for="PrixMiseEnVente" class="text-danger" aria-live="polite"></span>
+                <label asp-for="PrixMiseEnVenteString" class="control-label">Prix de vente</label>
+                <input asp-for="PrixMiseEnVenteString" class="form-control" placeholder="100000" required />
+                <span asp-validation-for="PrixMiseEnVenteString" class="text-danger" aria-live="polite"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Annee" class="control-label">Année</label>
@@ -63,6 +63,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </header>
             <div class="modal-body">
+                @if (TempData["ErreurMarque"] != null)
+                {
+                    <div id="ErreurMarqueMessage" class="alert alert-danger">
+                        @TempData["ErreurMarque"]
+                    </div>
+                    <div id="ErreurMarqueFlag" data-erreur="@TempData["ErreurMarque"]"></div>
+                }
                 @await Html.PartialAsync("~/Views/Marques/_CreatePartial.cshtml", new ExpressVoitures.Models.Marque())
             </div>
         </div>
@@ -78,6 +85,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                @if (TempData["ErreurModele"] != null)
+                {
+                    <div id="ErreurModeleMessage" class="alert alert-danger">
+                        @TempData["ErreurModele"]
+                    </div>
+                    <div id="ErreurModeleFlag" data-erreur="@TempData["ErreurModele"]"></div>
+                }
                 @await Html.PartialAsync("~/Views/Modeles/_CreatePartial.cshtml", new ExpressVoitures.Models.Modele())
             </div>
         </div>
@@ -93,6 +107,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                @if (TempData["ErreurFinition"] != null)
+                {
+                    <div id="ErreurFinitionMessage" class="alert alert-danger">
+                        @TempData["ErreurFinition"]
+                    </div>
+                    <div id="ErreurFinitionFlag" data-erreur="@TempData["ErreurFinition"]"></div>
+                }
                 @await Html.PartialAsync("~/Views/Finitions/_CreatePartial.cshtml", new ExpressVoitures.Models.Finition())
             </div>
         </div>
@@ -105,13 +126,30 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             
-            // Gestion des relations entre marque-modèle-finition
-            const modelesParMarque = @Html.Raw(Json.Serialize(ViewBag.ModelesParMarque));
-            const finitionsParModele = @Html.Raw(Json.Serialize(ViewBag.FinitionsParModele));
-
+            // -- Récupération des éléments pour la gestion de la relation Marque-Modèle-Finition --
             const marqueSelect = document.getElementById('marqueSelect');
             const modeleSelect = document.getElementById('modeleSelect');
             const finitionSelect = document.getElementById('finitionSelect');
+            const prixInput = document.getElementById('PrixMiseEnVente');
+            const anneeInput = document.getElementById('Annee');
+
+            // Restaurer les valeurs depuis sessionStorage si on vient d'une modale
+            if (!sessionStorage.getItem("fromModal")) {
+                sessionStorage.removeItem("prix");
+                sessionStorage.removeItem("annee");
+            }
+            else {
+                if (sessionStorage.getItem("prix")) {
+                    prixInput.value = sessionStorage.getItem("prix");
+                }
+                if (sessionStorage.getItem("annee")) {
+                    anneeInput.value = sessionStorage.getItem("annee");
+                }
+            }
+            sessionStorage.removeItem("fromModal");
+            
+            const modelesParMarque = @Html.Raw(Json.Serialize(ViewBag.ModelesParMarque));
+            const finitionsParModele = @Html.Raw(Json.Serialize(ViewBag.FinitionsParModele));
 
             // Désactiver Modèle et Finition
             modeleSelect.disabled = true;
@@ -121,21 +159,18 @@
             marqueSelect.appendChild(new Option("Autre…", "-1"));
 
             // -- Sélection d'une marque --
-            // Présélectionner automatiquement une marque créée
-            @if (ViewBag.MarqueCree != null)
-            {
-                <text>
-                    marqueSelect.value = "@ViewBag.MarqueCree";
-                    marqueSelect.dispatchEvent(new Event('change'));
-                </text>
-            }
-
             // Changement de la marque
             marqueSelect.addEventListener('change', function () {
                 let marqueId = this.value;
 
                 // Ouvrir une modale quand "Autre..." est sélectionné
                 if (this.value === "-1") {
+                    sessionStorage.setItem("fromModal", "1");
+                    
+                    // Sauvegarde des valeurs du formulaire
+                    sessionStorage.setItem("prix", prixInput.value);
+                    sessionStorage.setItem("annee", anneeInput.value);
+
                     $("#modaleMarque").modal("show");
                     return;
                 }
@@ -149,21 +184,20 @@
                 finitionSelect.disabled = true;
 
                 // Ajuster la liste des modèles
-                if (marqueId) {
-                    let listeModeles = modelesParMarque[marqueId];
-                    listeModeles.forEach(m => {
+                if (modelesParMarque[marqueId]) {
+                    modelesParMarque[marqueId].forEach(m => {
                         modeleSelect.appendChild(new Option(m.text, m.value));
                     });
                     modeleSelect.appendChild(new Option("Autre…", "-1"));
+                }
 
-                    // Présélectionner automatiquement un modèle créé
-                    @if (ViewBag.ModeleCree != null)
-                    {
-                        <text>
-                            modeleSelect.value = "@ViewBag.ModeleCree";
-                            modeleSelect.dispatchEvent(new Event('change'));
-                        </text>
-                    }
+                // Présélectionner automatiquement un modèle créé
+                @if (ViewBag.ModeleCree != null)
+                {
+                    <text>
+                        modeleSelect.value = "@ViewBag.ModeleCree";
+                        modeleSelect.dispatchEvent(new Event('change'));
+                    </text>
                 }
             });
 
@@ -175,6 +209,12 @@
                 // Ouvrir une modale quand "Autre..." est sélectionné
                 if (this.value === "-1") {
                     document.getElementById("idMarquePourModele").value = marqueSelect.value;
+                    sessionStorage.setItem("fromModal", "1");
+                    
+                    // Sauvegarde des valeurs du formulaire
+                    sessionStorage.setItem("prix", prixInput.value);
+                    sessionStorage.setItem("annee", anneeInput.value);
+
                     $("#modaleModele").modal("show");
                     return;
                 }
@@ -184,20 +224,19 @@
                 finitionSelect.disabled = false;
 
                 // Ajuster la liste des finitions
-                if (modeleId) {
-                    let listeFinitions = finitionsParModele[modeleId];
-                    listeFinitions.forEach(f => {
+                if (finitionsParModele[modeleId]) {
+                    finitionsParModele[modeleId].forEach(f => {
                         finitionSelect.appendChild(new Option(f.text, f.value));
                     });
                     finitionSelect.appendChild(new Option("Autre…", "-1"));
+                }
 
-                    // Présélectionner automatiquement une finition créée
-                    @if (ViewBag.FinitionCree != null)
-                    {
-                        <text>
-                            finitionSelect.value = "@ViewBag.FinitionCree";
-                        </text>
-                    }
+                // Présélectionner automatiquement une finition créée
+                @if (ViewBag.FinitionCree != null)
+                {
+                    <text>
+                        finitionSelect.value = "@ViewBag.FinitionCree";
+                    </text>
                 }
             });
             
@@ -209,23 +248,50 @@
                 // Ouvrir une modale quand "Autre..." est sélectionné
                 if (this.value === "-1") {
                     document.getElementById("idModelePourFinition").value = modeleSelect.value;
+                    sessionStorage.setItem("fromModal", "1");
+                    
+                    // Sauvegarde des valeurs du formulaire
+                    sessionStorage.setItem("prix", prixInput.value);
+                    sessionStorage.setItem("annee", anneeInput.value);
+
                     $("#modaleFinition").modal("show");
                     return;
                 }
             });
+
+            // Présélectionner automatiquement la marque correspondant
+            @if (ViewBag.MarqueCree != null)
+            {
+                <text>
+                    marqueSelect.value = "@ViewBag.MarqueCree";
+                    marqueSelect.dispatchEvent(new Event('change'));
+                </text>
+            }
+
+            // -- Réouverture automatique des modales si erreur --
+            const erreurMarque = document.getElementById("ErreurMarqueFlag");
+            if (erreurMarque && erreurMarque.dataset.erreur && erreurMarque.dataset.erreur.trim() != "") {
+                $("#modaleMarque").modal("show");
+            }
+
+            const erreurModele = document.getElementById("ErreurModeleFlag");
+            if (erreurModele && erreurModele.dataset.erreur && erreurModele.dataset.erreur.trim() != "") {
+                $("#modaleModele").modal("show");
+            }
+
+            const erreurFinition = document.getElementById("ErreurFinitionFlag");
+            if (erreurFinition && erreurFinition.dataset.erreur && erreurFinition.dataset.erreur.trim() != "") {
+                $("#modaleFinition").modal("show");
+            }
         });
 
-        // Réinitionaliser les valeurs des select pour pouvoir afficher de nouveau une modale
-        $('#modaleMarque').on('hidden.bs.modal', function () {
-            marqueSelect.value = "";
-        });
-
-        $('#modaleModele').on('hidden.bs.modal', function () {
-            modeleSelect.value = "";
-        });
-
-        $('#modaleFinition').on('hidden.bs.modal', function () {
-            finitionSelect.value = "";
-        });
+        // -- Effacer les valeurs de sessionStorage quand on soumet le formulaire --
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                sessionStorage.removeItem("prix");
+                sessionStorage.removeItem("annee");
+            });
+        }
     </script>
 }

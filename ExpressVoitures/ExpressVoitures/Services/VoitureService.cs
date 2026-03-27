@@ -8,11 +8,25 @@ namespace ExpressVoitures.Services
     public class VoitureService : IVoitureService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public VoitureService(ApplicationDbContext context)
+        public VoitureService(ApplicationDbContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
+
+        private void SupprimerImage(string? nomImage)
+        {
+            if (string.IsNullOrEmpty(nomImage))
+                return;
+
+            var chemin = Path.Combine(_env.WebRootPath, "images/voitures", nomImage);
+
+            if (File.Exists(chemin))
+                File.Delete(chemin);
+        }
+
 
         public async Task CreerAsync(Voiture voiture)
         {
@@ -38,6 +52,41 @@ namespace ExpressVoitures.Services
         public async Task MettreAJourAsync(Voiture voiture)
         {
             _context.Voitures.Update(voiture);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task MettreAJourAvecImageAsync(Voiture voiture, IFormFile nouvelleImage)
+        {
+            var voitureExistante = await _context.Voitures.FindAsync(voiture.Id);
+
+            if (voitureExistante == null)
+                return;
+
+            // Supprimer l'ancienne image
+            if (!string.IsNullOrEmpty(voitureExistante.Image))
+            {
+                var oldPath = Path.Combine(_env.WebRootPath, "images/voitures", voitureExistante.Image);
+
+                if (File.Exists(oldPath))
+                    File.Delete(oldPath);
+            }
+
+            // Enregistrer la nouvelle image
+            voitureExistante.Image = await TelechargerImageAsync(nouvelleImage);
+
+            // Mettre à jour les autres champs
+            voitureExistante.CodeVin = voiture.CodeVin;
+            voitureExistante.Annee = voiture.Annee;
+            voitureExistante.IdMarque = voiture.IdMarque;
+            voitureExistante.IdModele = voiture.IdModele;
+            voitureExistante.IdFinition = voiture.IdFinition;
+            voitureExistante.Description = voiture.Description;
+            voitureExistante.DateAchat = voiture.DateAchat;
+            voitureExistante.PrixAchat = voiture.PrixAchat;
+            voitureExistante.DateMiseEnVente = voiture.DateMiseEnVente;
+            voitureExistante.PrixMiseEnVente = voiture.PrixMiseEnVente;
+            voitureExistante.AnnoncePubliee = voiture.AnnoncePubliee;
+
             await _context.SaveChangesAsync();
         }
 
@@ -128,9 +177,32 @@ namespace ExpressVoitures.Services
             var voiture = await _context.Voitures.FirstOrDefaultAsync(v => v.Id == id);
             if (voiture != null)
             {
+                SupprimerImage(voiture.Image);
                 _context.Voitures.Remove(voiture);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public void ValiderImage(IFormFile fichier)
+        {
+            // Vérifier que le fichier n'est pas vide
+            if (fichier == null || fichier.Length == 0)
+                throw new Exception("FICHIER_VIDE");
+
+            // Vérifier l'extension du fichier
+            var extensionsAutorisees = new[] { ".jpg", ".jpeg", ".png" };
+            var extension = Path.GetExtension(fichier.FileName).ToLower();
+            if (!extensionsAutorisees.Contains(extension))
+                throw new Exception("EXTENSION_INVALIDE");
+
+            // Vérifier la taille du fichier
+            long tailleMax = 2 * 1024 * 1024;
+            if (fichier.Length > tailleMax)
+                throw new Exception("TAILLE_INVALIDE");
+
+            // Vérification MIME
+            if (!fichier.ContentType.StartsWith("image/"))
+                throw new Exception("MIME_INVALIDE");
         }
 
         public async Task<string> TelechargerImageAsync(IFormFile fichier)
@@ -155,13 +227,13 @@ namespace ExpressVoitures.Services
                 throw new Exception("MIME_INVALIDE");
 
             // Génération d'un nom de fichier unique
-            var nomImage = Guid.NewGuid() + Path.GetExtension(fichier.FileName);
+            var nomImage = Guid.NewGuid() + extension;
 
             // Construction du chemin de l'image
-            var nomChemin = Path.Combine("wwwroot/images/voitures", nomImage);
+            var chemin = Path.Combine(_env.WebRootPath, "images/voitures", nomImage);
 
             // Création du fichier physique dans le projet
-            using (var stream = new FileStream(nomChemin, FileMode.Create))
+            using (var stream = new FileStream(chemin, FileMode.Create))
             {
                 await fichier.CopyToAsync(stream);
             }

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -107,7 +108,7 @@ namespace ExpressVoitures.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrateur")]
-        public async Task<IActionResult> Create([Bind("Id,CodeVin,Annee,Image,TelechargerImage,Description,DateAchat,PrixAchat,VoitureReparee,DateMiseEnVente,PrixMiseEnVente,AnnoncePubliee,VoitureVendue,IdMarque,IdModele,IdFinition")] Voiture voiture)
+        public async Task<IActionResult> Create([Bind("Id,CodeVin,Annee,Image,TelechargerImage,Description,DateAchat,PrixAchat,PrixAchatString,VoitureReparee,DateMiseEnVente,PrixMiseEnVente,PrixMiseEnVenteString,AnnoncePubliee,VoitureVendue,IdMarque,IdModele,IdFinition")] Voiture voiture)
         {
             if (voiture.CodeVin != null)
             {
@@ -122,6 +123,30 @@ namespace ExpressVoitures.Controllers
             if (voiture.DateAchat != null && voiture.DateMiseEnVente < voiture.DateAchat)
             {
                 ModelState.AddModelError("", "La date de mise en vente ne peut pas être antérieure à la date d'achat de la voiture.");
+            }
+
+            if (!double.TryParse(voiture.PrixAchatString.Replace(",", "."),
+                     NumberStyles.Any,
+                     CultureInfo.InvariantCulture,
+                     out double prixAchat))
+            {
+                ModelState.AddModelError("PrixAchatString", "Le prix doit être un nombre positif avec au maximum 2 décimales");
+            }
+            else
+            {
+                voiture.PrixMiseEnVente = prixAchat;
+            }
+
+            if (!double.TryParse(voiture.PrixMiseEnVenteString.Replace(",", "."),
+                     NumberStyles.Any,
+                     CultureInfo.InvariantCulture,
+                     out double prixVente))
+            {
+                ModelState.AddModelError("PrixMiseEnVenteString", "Le prix doit être un nombre positif avec au maximum 2 décimales");
+            }
+            else
+            {
+                voiture.PrixMiseEnVente = prixVente;
             }
 
             if (ModelState.IsValid)
@@ -142,16 +167,35 @@ namespace ExpressVoitures.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateSimple([Bind("Id,Annee,Image,TelechargerImage,PrixMiseEnVente,AnnoncePubliee,IdMarque,IdModele,IdFinition")] Voiture voiture)
+        public async Task<IActionResult> CreateSimple([Bind("Id,Annee,Image,TelechargerImage,PrixMiseEnVenteString,PrixMiseEnVente,AnnoncePubliee,IdMarque,IdModele,IdFinition")] Voiture voiture)
         {
+            if (!double.TryParse(voiture.PrixMiseEnVenteString.Replace(",", "."),
+                     NumberStyles.Any,
+                     CultureInfo.InvariantCulture,
+                     out double prix))
+            {
+                ModelState.AddModelError("PrixMiseEnVenteString", "Le prix doit être un nombre positif avec au maximum 2 décimales");
+            }
+            else
+            {
+                voiture.PrixMiseEnVente = prix;
+            }
+
             if (ModelState.IsValid)
             {
                 if (!await TentativeTelechargementImageAsync(voiture))
                 {
                     return await RetournerVueAvecListes(voiture);
                 }
+
+                if (voiture.TelechargerImage != null)
+                {
+                    voiture.Image = await _voitureService.TelechargerImageAsync(voiture.TelechargerImage);
+                }
+
                 voiture.AnnoncePubliee = true;
                 voiture.IdUtilisateur = _userManager.GetUserId(User);
+                
                 await _voitureService.CreerAsync(voiture);
                 return View("CreateSucces");
             }
@@ -176,6 +220,12 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
+            if (voiture.PrixAchat.HasValue)
+            {
+                voiture.PrixAchatString = voiture.PrixAchat.Value.ToString("0.##", new CultureInfo("fr-FR"));
+            }
+            voiture.PrixMiseEnVenteString = voiture.PrixMiseEnVente.ToString("0.##", new CultureInfo("fr-FR"));
+
             ListeAnnees();
             await ListesMarquesModelesFinitions();
             return View(voiture);
@@ -193,6 +243,8 @@ namespace ExpressVoitures.Controllers
             {
                 return NotFound();
             }
+
+            voiture.PrixMiseEnVenteString = voiture.PrixMiseEnVente.ToString("0.##", new CultureInfo("fr-FR"));
 
             // Vérifier l'autorisation
             if (!User.IsInRole("Administrateur"))
@@ -212,7 +264,7 @@ namespace ExpressVoitures.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrateur")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CodeVin,Annee,Image,TelechargerImage,Description,DateAchat,PrixAchat,VoitureReparee,DateMiseEnVente,PrixMiseEnVente,AnnoncePubliee,VoitureVendue,IdMarque,IdModele,IdFinition")] Voiture voiture)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,CodeVin,Annee,Image,TelechargerImage,Description,DateAchat,PrixAchatString,PrixAchat,VoitureReparee,DateMiseEnVente,PrixMiseEnVenteString,PrixMiseEnVente,AnnoncePubliee,VoitureVendue,IdMarque,IdModele,IdFinition")] Voiture voiture)
         {
             if (id != voiture.Id)
             {
@@ -234,6 +286,30 @@ namespace ExpressVoitures.Controllers
                 ModelState.AddModelError("", "La date de mise en vente ne peut pas être antérieure à la date d'achat de la voiture.");
             }
 
+            if (!double.TryParse(voiture.PrixAchatString.Replace(",", "."),
+                     NumberStyles.Any,
+                     CultureInfo.InvariantCulture,
+                     out double prixAchat))
+            {
+                ModelState.AddModelError("PrixAchatString", "Le prix doit être un nombre positif avec au maximum 2 décimales");
+            }
+            else
+            {
+                voiture.PrixMiseEnVente = prixAchat;
+            }
+
+            if (!double.TryParse(voiture.PrixMiseEnVenteString.Replace(",", "."),
+                     NumberStyles.Any,
+                     CultureInfo.InvariantCulture,
+                     out double prixVente))
+            {
+                ModelState.AddModelError("PrixMiseEnVenteString", "Le prix doit être un nombre positif avec au maximum 2 décimales");
+            }
+            else
+            {
+                voiture.PrixMiseEnVente = prixVente;
+            }
+
             if (ModelState.IsValid)
             {
                 try
@@ -242,7 +318,14 @@ namespace ExpressVoitures.Controllers
                     {
                         return await RetournerVueAvecListes(voiture);
                     }
-                    await _voitureService.MettreAJourAsync(voiture);
+                    if (voiture.TelechargerImage != null)
+                    {
+                        await _voitureService.MettreAJourAvecImageAsync(voiture, voiture.TelechargerImage);
+                    }
+                    else
+                    {
+                        await _voitureService.MettreAJourAsync(voiture);
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -265,11 +348,23 @@ namespace ExpressVoitures.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditSimple(int id, [Bind("Id,Annee,Image,TelechargerImage,PrixMiseEnVente,AnnoncePubliee,IdMarque,IdModele,IdFinition")] Voiture voiture)
+        public async Task<IActionResult> EditSimple(int id, [Bind("Id,Annee,Image,TelechargerImage,PrixMiseEnVenteString,PrixMiseEnVente,AnnoncePubliee,IdMarque,IdModele,IdFinition")] Voiture voiture)
         {
             if (id != voiture.Id)
             {
                 return NotFound();
+            }
+
+            if (!double.TryParse(voiture.PrixMiseEnVenteString.Replace(",", "."),
+                     NumberStyles.Any,
+                     CultureInfo.InvariantCulture,
+                     out double prixVente))
+            {
+                ModelState.AddModelError("PrixMiseEnVenteString", "Le prix doit être un nombre positif avec au maximum 2 décimales");
+            }
+            else
+            {
+                voiture.PrixMiseEnVente = prixVente;
             }
 
             var voitureOriginale = await _voitureService.ObtenirParIdAsync(id);
@@ -298,7 +393,14 @@ namespace ExpressVoitures.Controllers
                     }
                     voiture.AnnoncePubliee = true;
                     voiture.IdUtilisateur = voitureOriginale.IdUtilisateur;
-                    await _voitureService.MettreAJourAsync(voiture);
+                    if (voiture.TelechargerImage != null)
+                    {
+                        await _voitureService.MettreAJourAvecImageAsync(voiture, voiture.TelechargerImage);
+                    }
+                    else
+                    {
+                        await _voitureService.MettreAJourAsync(voiture);
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -360,16 +462,6 @@ namespace ExpressVoitures.Controllers
             {
                 if (voiture.IdUtilisateur != _userManager.GetUserId(User))
                     return Forbid();
-            }
-
-            // Supprimer l'image de l'application si présente
-            if (!string.IsNullOrEmpty(voiture.Image))
-            {
-                var cheminImage = Path.Combine("wwwroot/images/voitures", voiture.Image);
-                if (System.IO.File.Exists(cheminImage))
-                {
-                    System.IO.File.Delete(cheminImage);
-                }
             }
 
             // Stockage des informations de la voiture avant de la supprimer
@@ -461,7 +553,7 @@ namespace ExpressVoitures.Controllers
 
             try
             {
-                voiture.Image = await _voitureService.TelechargerImageAsync(voiture.TelechargerImage);
+                _voitureService.ValiderImage(voiture.TelechargerImage);
                 return true;
             }
             catch (Exception exception)

@@ -25,6 +25,9 @@ namespace ExpressVoitures.Models
         [DataType(DataType.Date)]
         public DateTime? DateAchat { get; set; }
 
+        [NotMapped]
+        [RegularExpression(@"^\d+([.,]\d{1,2})?$", ErrorMessage = "Le prix doit être un nombre positif avec au maximum 2 décimales")]
+        public string? PrixAchatString { get; set; }
         public double? PrixAchat { get; set; }
 
         public bool VoitureReparee { get; set; }
@@ -32,7 +35,10 @@ namespace ExpressVoitures.Models
         [DataType(DataType.Date)]
         public DateTime? DateMiseEnVente { get; set; }
 
+        [NotMapped]
         [Required(ErrorMessage = "Veuillez indiquer le prix de vente")]
+        [RegularExpression(@"^\d+([.,]\d{1,2})?$", ErrorMessage = "Le prix doit être un nombre positif avec au maximum 2 décimales")]
+        public string PrixMiseEnVenteString { get; set; }
         public double PrixMiseEnVente { get; set; }
 
         public bool AnnoncePubliee { get; set; }

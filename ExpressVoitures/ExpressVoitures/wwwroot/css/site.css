@@ -101,6 +101,17 @@ h2 {
     font-weight: var(--font-weight-title);
 }
 
+select {
+    background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='16' viewBox='0 0 20 20' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M5.516 7.548l4.484 4.484 4.484-4.484L16 8.548l-6 6-6-6z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    padding-right: 30px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
 .logo {
     font-family: var(--font-family-logo);
     font-weight: var(--font-weight-logo);
@@ -174,9 +185,14 @@ a.boutonAction:focus, a.boutonAction:active, a.boutonAction:hover {
     font-weight: var(--font-weight-button-hover) !important;
 }
 
+.form-group .text-danger {
+    display: block;
+    margin-top: 5px;
+}
+
+
 
 /* Textes et liens de navigation */
-
 .information {
     font-family: var(--font-family-information);
     font-size: var(--font-size-information);

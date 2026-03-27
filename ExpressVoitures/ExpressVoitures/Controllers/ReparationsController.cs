@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ExpressVoitures.Data;
+using ExpressVoitures.Interfaces;
+using ExpressVoitures.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using ExpressVoitures.Data;
-using ExpressVoitures.Models;
-using ExpressVoitures.Interfaces;
-using Microsoft.AspNetCore.Authorization;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ExpressVoitures.Controllers
 {
@@ -61,8 +62,20 @@ namespace ExpressVoitures.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ReparationEffectuee,Cout,IdVoiture")] Reparation reparation)
+        public async Task<IActionResult> Create([Bind("Id,ReparationEffectuee,Cout,CoutString,IdVoiture")] Reparation reparation)
         {
+            if (!double.TryParse(reparation.CoutString.Replace(",", "."),
+                     NumberStyles.Any,
+                     CultureInfo.InvariantCulture,
+                     out double cout))
+            {
+                ModelState.AddModelError("CoutString", "Le prix doit être un nombre positif avec au maximum 2 décimales");
+            }
+            else
+            {
+                reparation.Cout = cout;
+            }
+
             if (ModelState.IsValid)
             {
                 await _reparationService.CreerAsync(reparation);
@@ -86,6 +99,9 @@ namespace ExpressVoitures.Controllers
             {
                 return NotFound();
             }
+
+            reparation.CoutString = reparation.Cout.ToString("0.##", new CultureInfo("fr-FR"));
+
             var voitures = await _voitureService.ObtenirToutesAsync();
             ViewData["IdVoiture"] = new SelectList(await _voitureService.ObtenirParPresenceCodeVinAsync(), "Id", "CodeVin", reparation.IdVoiture);
             return View(reparation);
@@ -96,11 +112,23 @@ namespace ExpressVoitures.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,ReparationEffectuee,Cout,IdVoiture")] Reparation reparation)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,ReparationEffectuee,Cout,CoutString,IdVoiture")] Reparation reparation)
         {
             if (id != reparation.Id)
             {
                 return NotFound();
+            }
+
+            if (!double.TryParse(reparation.CoutString.Replace(",", "."),
+                     NumberStyles.Any,
+                     CultureInfo.InvariantCulture,
+                     out double cout))
+            {
+                ModelState.AddModelError("CoutString", "La valeur saisie pour le prix doit être un nombre positif, avec au maximum 2 décimales");
+            }
+            else
+            {
+                reparation.Cout = cout;
             }
 
             if (ModelState.IsValid)
