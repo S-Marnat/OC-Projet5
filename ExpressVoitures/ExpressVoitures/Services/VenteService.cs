@@ -18,6 +18,14 @@ namespace ExpressVoitures.Services
         {
             _context.Ventes.Add(vente);
             await _context.SaveChangesAsync();
+
+            // Mise à jour automatique de la voiture
+            var voiture = await _context.Voitures.FindAsync(vente.IdVoiture);
+            if (voiture != null)
+            {
+                voiture.VoitureVendue = true;
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task<bool> ExisteAsync(int id)
@@ -34,13 +42,22 @@ namespace ExpressVoitures.Services
 
         public async Task MettreAJourAsync(Vente vente)
         {
-            _context.Ventes.Update(vente);
+            var venteExiste = await _context.Ventes.FindAsync(vente.Id);
+
+            if (venteExiste == null)
+                throw new Exception("Vente introuvable");
+
+            // Mise à jour des champs autorisés
+            venteExiste.Date = vente.Date;
+            venteExiste.IdVoiture = vente.IdVoiture;
+
             await _context.SaveChangesAsync();
         }
 
         public async Task<Vente?> ObtenirParIdAsync(int id)
         {
             return await _context.Ventes
+                .AsNoTracking()
                 .Include(v => v.Voiture)
                 .FirstOrDefaultAsync(v => v.Id == id);
         }
@@ -55,7 +72,9 @@ namespace ExpressVoitures.Services
         public async Task<List<Vente>> ObtenirToutesAsync()
         {
             return await _context.Ventes
-                .Include(v =>v.Voiture)
+                .Include(v => v.Voiture).ThenInclude(v => v.Marque)
+                .Include(v => v.Voiture).ThenInclude(v => v.Modele)
+                .Include(v => v.Voiture).ThenInclude(v => v.Finition)
                 .ToListAsync();
         }
 
@@ -64,8 +83,20 @@ namespace ExpressVoitures.Services
             var vente = await _context.Ventes.FirstOrDefaultAsync(v => v.Id == id);
             if (vente != null)
             {
+                int idVoiture = vente.IdVoiture.Value;
+
                 _context.Ventes.Remove(vente);
                 await _context.SaveChangesAsync();
+
+                // Vérifier s'il reste une vente pour cette voiture
+                bool encoreUneVente = await _context.Ventes.AnyAsync(v => v.IdVoiture == idVoiture);
+
+                var voiture = await _context.Voitures.FindAsync(idVoiture);
+                if (voiture != null)
+                {
+                    voiture.VoitureVendue = encoreUneVente;
+                    await _context.SaveChangesAsync();
+                }
             }
         }
     }

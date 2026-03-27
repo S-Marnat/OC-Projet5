@@ -31,10 +31,10 @@
                 @Html.DisplayFor(modelItem => item.ReparationEffectuee)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Cout)
+                @Html.DisplayFor(modelItem => item.Cout) €
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Voiture.CodeVin)
+                @Html.DisplayFor(modelItem => item.Voiture.NomComplet)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Editer</a> |

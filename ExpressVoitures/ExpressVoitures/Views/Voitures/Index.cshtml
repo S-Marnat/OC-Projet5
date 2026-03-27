@@ -9,41 +9,17 @@
 <p>
     <a asp-action="Create">Créer une nouvelle voiture</a>
 </p>
+
+<p>Supprimer une voiture supprimera également les réparations et la vente qui lui sont éventuellement associées.</p>
+
 <table class="table">
     <thead>
         <tr>
             <th>
-                Code Vin
-            </th>
-            <th>
-                Année
-            </th>
-            <th>
                 Visuel
             </th>
             <th>
-                Description
-            </th>
-            <th>
-                Dâte d'achat
-            </th>
-            <th>
-                Prix d'achat
-            </th>
-            <th>
-                Voiture réparée ?
-            </th>
-            <th>
-                Dâte de mise en vente
-            </th>
-            <th>
-                Prix de mise en vente
-            </th>
-            <th>
-                Annonce publiée ?
-            </th>
-            <th>
-                Voiture vendue ?
+                Année
             </th>
             <th>
                 Marque
@@ -54,18 +30,24 @@
             <th>
                 Finition
             </th>
+            <th>
+                Prix de mise en vente
+            </th>
+            <th>
+                Annonce publiée ?
+            </th>
+            <th>
+                Voiture réparée ?
+            </th>
+            <th>
+                Voiture vendue ?
+            </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.CodeVin)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Annee)
-            </td>
             <td>
                 @if (!string.IsNullOrEmpty(item.Image))
                 {
@@ -79,28 +61,7 @@
                 }
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateAchat)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PrixAchat)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.VoitureReparee)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateMiseEnVente)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PrixMiseEnVente)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AnnoncePubliee)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.VoitureVendue)
+                @Html.DisplayFor(modelItem => item.Annee)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Marque.Nom)
@@ -110,6 +71,18 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Finition.Nom)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PrixMiseEnVente) €
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AnnoncePubliee)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.VoitureReparee)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.VoitureVendue)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Editer</a> |

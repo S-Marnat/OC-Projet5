@@ -34,6 +34,13 @@ namespace ExpressVoitures.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task CreerAvecImageAsync(Voiture voiture, IFormFile fichier)
+        {
+            voiture.Image = await TelechargerImageAsync(fichier);
+            _context.Voitures.Add(voiture);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<bool> ExisteAsync(int id)
         {
             return await _context.Voitures.AnyAsync(v => v.Id == id);

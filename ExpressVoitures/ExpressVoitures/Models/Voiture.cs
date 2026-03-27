@@ -63,6 +63,9 @@ namespace ExpressVoitures.Models
         public List<Reparation> Reparations { get; set; } = new();
         public string? IdUtilisateur { get; set; }
 
+        [NotMapped]
+        public string NomComplet => $"{Annee} {Marque?.Nom} {Modele?.Nom} {Finition?.Nom}";
+
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

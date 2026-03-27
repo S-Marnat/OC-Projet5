@@ -53,7 +53,7 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Create()
         {
             var voitures = await _voitureService.ObtenirToutesAsync();
-            ViewData["IdVoiture"] = new SelectList(await _voitureService.ObtenirParPresenceCodeVinAsync(), "Id", "CodeVin");
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "NomComplet");
             return View();
         }
 
@@ -82,7 +82,7 @@ namespace ExpressVoitures.Controllers
                 return RedirectToAction(nameof(Index));
             }
             var voitures = await _voitureService.ObtenirToutesAsync();
-            ViewData["IdVoiture"] = new SelectList(await _voitureService.ObtenirParPresenceCodeVinAsync(), "Id", "CodeVin", reparation.IdVoiture);
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "NomComplet", reparation.IdVoiture);
             return View(reparation);
         }
 
@@ -103,7 +103,7 @@ namespace ExpressVoitures.Controllers
             reparation.CoutString = reparation.Cout.ToString("0.##", new CultureInfo("fr-FR"));
 
             var voitures = await _voitureService.ObtenirToutesAsync();
-            ViewData["IdVoiture"] = new SelectList(await _voitureService.ObtenirParPresenceCodeVinAsync(), "Id", "CodeVin", reparation.IdVoiture);
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "NomComplet", reparation.IdVoiture);
             return View(reparation);
         }
 
@@ -151,7 +151,7 @@ namespace ExpressVoitures.Controllers
                 return RedirectToAction(nameof(Index));
             }
             var voitures = await _voitureService.ObtenirToutesAsync();
-            ViewData["IdVoiture"] = new SelectList(await _voitureService.ObtenirParPresenceCodeVinAsync(), "Id", "CodeVin", reparation.IdVoiture);
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "NomComplet", reparation.IdVoiture);
             return View(reparation);
         }
 

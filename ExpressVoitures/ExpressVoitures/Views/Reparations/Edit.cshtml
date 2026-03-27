@@ -23,7 +23,9 @@
             </div>
             <div class="form-group">
                 <label asp-for="IdVoiture" class="control-label">Voiture correspondant à cette réparation</label>
-                <select asp-for="IdVoiture" class="form-control" asp-items="ViewBag.IdVoiture" required></select>
+                <select asp-for="IdVoiture" class="form-control" asp-items="ViewBag.IdVoiture" required>
+                    <option value="">Sélectionnez une voiture</option>
+                </select>
                 <span asp-validation-for="IdVoiture" class="text-danger" aria-live="polite"></span>
             </div>
             <div class="form-group d-flex justify-content-center">

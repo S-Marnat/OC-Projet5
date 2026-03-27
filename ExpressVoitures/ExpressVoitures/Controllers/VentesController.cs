@@ -53,7 +53,7 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Create()
         {
             var voitures = await _voitureService.ObtenirToutesAsync();
-            ViewData["IdVoiture"] = new SelectList(await _voitureService.ObtenirParPresenceCodeVinAsync(), "Id", "CodeVin");
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "NomComplet");
             return View();
         }
 
@@ -86,7 +86,7 @@ namespace ExpressVoitures.Controllers
                 return RedirectToAction(nameof(Index));
             }
             var voitures = await _voitureService.ObtenirToutesAsync();
-            ViewData["IdVoiture"] = new SelectList(await _voitureService.ObtenirParPresenceCodeVinAsync(), "Id", "CodeVin", vente.IdVoiture);
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "NomComplet", vente.IdVoiture);
             return View(vente);
         }
 
@@ -103,8 +103,9 @@ namespace ExpressVoitures.Controllers
             {
                 return NotFound();
             }
+
             var voitures = await _voitureService.ObtenirToutesAsync();
-            ViewData["IdVoiture"] = new SelectList(await _voitureService.ObtenirParPresenceCodeVinAsync(), "Id", "CodeVin", vente.IdVoiture);
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "NomComplet", vente.IdVoiture);
             return View(vente);
         }
 
@@ -156,7 +157,7 @@ namespace ExpressVoitures.Controllers
                 return RedirectToAction(nameof(Index));
             }
             var voitures = await _voitureService.ObtenirToutesAsync();
-            ViewData["IdVoiture"] = new SelectList(await _voitureService.ObtenirParPresenceCodeVinAsync(), "Id", "CodeVin", vente.IdVoiture);
+            ViewData["IdVoiture"] = new SelectList(voitures, "Id", "NomComplet", vente.IdVoiture);
             return View(vente);
         }
 

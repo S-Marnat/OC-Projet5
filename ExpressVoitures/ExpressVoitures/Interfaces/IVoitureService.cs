@@ -7,6 +7,7 @@ namespace ExpressVoitures.Interfaces
         Task<List<Voiture>> ObtenirToutesAsync();
         Task<Voiture?> ObtenirParIdAsync(int id);
         Task CreerAsync(Voiture voiture);
+        Task CreerAvecImageAsync(Voiture voiture, IFormFile fichier);
         Task MettreAJourAsync(Voiture voiture);
         Task MettreAJourAvecImageAsync(Voiture voiture, IFormFile nouvelleImage);
         Task SupprimerAsync(int id);
