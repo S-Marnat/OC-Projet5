@@ -51,15 +51,11 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var voiture = await _voitureService.ObtenirParIdAsync(id.Value);
             if (voiture == null)
-            {
                 return NotFound();
-            }
 
             return View(voiture);
         }
@@ -68,15 +64,11 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> DetailsSimple(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var voiture = await _voitureService.ObtenirParIdAsync(id.Value);
             if (voiture == null)
-            {
                 return NotFound();
-            }
 
             return View(voiture);
         }
@@ -115,22 +107,18 @@ namespace ExpressVoitures.Controllers
                 bool voitureExiste;
                 voitureExiste = await _voitureService.VinExisteAsync(voiture.CodeVin);
                 if (voitureExiste)
-                {
-                    ModelState.AddModelError("", "Une voiture portant ce code VIN existe déjà.");
-                }
+                    ModelState.AddModelError("CodeVin", "Une voiture portant ce code VIN existe déjà.");
             }
 
             if (voiture.DateAchat != null && voiture.DateMiseEnVente < voiture.DateAchat)
-            {
                 ModelState.AddModelError("", "La date de mise en vente ne peut pas être antérieure à la date d'achat de la voiture.");
-            }
 
             if (string.IsNullOrWhiteSpace(voiture.PrixAchatString))
             {
                 voiture.PrixAchat = null;
             }
             else if (!double.TryParse(
-                voiture.PrixAchatString.Replace(",", "."),
+                voiture.PrixAchatString.Replace(".", ","),
                 NumberStyles.Any,
                 new CultureInfo("fr-FR"),
                 out double prixAchat))
@@ -142,10 +130,11 @@ namespace ExpressVoitures.Controllers
                 voiture.PrixAchat = prixAchat;
             }
 
-            if (!double.TryParse(voiture.PrixMiseEnVenteString.Replace(",", "."),
-                     NumberStyles.Any,
-                     CultureInfo.InvariantCulture,
-                     out double prixVente))
+            if (!double.TryParse(
+                voiture.PrixMiseEnVenteString.Replace(".", ","),
+                NumberStyles.Any,
+                new CultureInfo("fr-FR"),
+                out double prixVente))
             {
                 ModelState.AddModelError("PrixMiseEnVenteString", "Le prix doit être un nombre positif avec au maximum 2 décimales");
             }
@@ -159,9 +148,7 @@ namespace ExpressVoitures.Controllers
                 try
                 {
                     if (!await TentativeTelechargementImageAsync(voiture))
-                    {
                         return await RetournerVueAvecListes(voiture);
-                    }
 
                     voiture.IdUtilisateur = _userManager.GetUserId(User);
 
@@ -197,10 +184,11 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateSimple([Bind("Id,Annee,Image,TelechargerImage,PrixMiseEnVenteString,PrixMiseEnVente,AnnoncePubliee,IdMarque,IdModele,IdFinition")] Voiture voiture)
         {
-            if (!double.TryParse(voiture.PrixMiseEnVenteString.Replace(",", "."),
-                     NumberStyles.Any,
-                     CultureInfo.InvariantCulture,
-                     out double prix))
+            if (!double.TryParse(
+                voiture.PrixMiseEnVenteString.Replace(".", ","),
+                NumberStyles.Any,
+                new CultureInfo("fr-FR"),
+                out double prix))
             {
                 ModelState.AddModelError("PrixMiseEnVenteString", "Le prix doit être un nombre positif avec au maximum 2 décimales");
             }
@@ -212,14 +200,10 @@ namespace ExpressVoitures.Controllers
             if (ModelState.IsValid)
             {
                 if (!await TentativeTelechargementImageAsync(voiture))
-                {
                     return await RetournerVueAvecListes(voiture);
-                }
 
                 if (voiture.TelechargerImage != null)
-                {
                     voiture.Image = await _voitureService.TelechargerImageAsync(voiture.TelechargerImage);
-                }
 
                 voiture.AnnoncePubliee = true;
                 voiture.IdUtilisateur = _userManager.GetUserId(User);
@@ -238,20 +222,14 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var voiture = await _voitureService.ObtenirParIdAsync(id.Value);
             if (voiture == null)
-            {
                 return NotFound();
-            }
 
             if (voiture.PrixAchat.HasValue)
-            {
                 voiture.PrixAchatString = voiture.PrixAchat.Value.ToString("0.##", new CultureInfo("fr-FR"));
-            }
             voiture.PrixMiseEnVenteString = voiture.PrixMiseEnVente.ToString("0.##", new CultureInfo("fr-FR"));
 
             ListeAnnees();
@@ -262,15 +240,11 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> EditSimple(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var voiture = await _voitureService.ObtenirParIdAsync(id.Value);
             if (voiture == null)
-            {
                 return NotFound();
-            }
 
             voiture.PrixMiseEnVenteString = voiture.PrixMiseEnVente.ToString("0.##", new CultureInfo("fr-FR"));
 
@@ -295,31 +269,25 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Edit(int id, [Bind("Id,CodeVin,Annee,Image,TelechargerImage,Description,DateAchat,PrixAchatString,PrixAchat,DateMiseEnVente,PrixMiseEnVenteString,PrixMiseEnVente,AnnoncePubliee,VoitureReparee,VoitureVendue,IdMarque,IdModele,IdFinition")] Voiture voiture)
         {
             if (id != voiture.Id)
-            {
                 return NotFound();
-            }
 
             if (voiture.CodeVin != null)
             {
                 bool voitureExiste;
                 voitureExiste = await _voitureService.VinExisteAsync(voiture.CodeVin, voiture.Id);
                 if (voitureExiste)
-                {
                     ModelState.AddModelError("", "Une voiture portant ce code VIN existe déjà.");
-                }
             }
 
             if (voiture.DateAchat != null && voiture.DateMiseEnVente < voiture.DateAchat)
-            {
                 ModelState.AddModelError("", "La date de mise en vente ne peut pas être antérieure à la date d'achat de la voiture.");
-            }
 
             if (string.IsNullOrWhiteSpace(voiture.PrixAchatString))
             {
                 voiture.PrixAchat = null;
             }
             else if (!double.TryParse(
-                voiture.PrixAchatString.Replace(",", "."),
+                voiture.PrixAchatString.Replace(".", ","),
                 NumberStyles.Any,
                 new CultureInfo("fr-FR"),
                 out double prixAchat))
@@ -331,10 +299,11 @@ namespace ExpressVoitures.Controllers
                 voiture.PrixAchat = prixAchat;
             }
 
-            if (!double.TryParse(voiture.PrixMiseEnVenteString.Replace(",", "."),
-                     NumberStyles.Any,
-                     CultureInfo.InvariantCulture,
-                     out double prixVente))
+            if (!double.TryParse(
+                voiture.PrixMiseEnVenteString.Replace(",", "."),
+                NumberStyles.Any,
+                new CultureInfo("fr-FR"),
+                out double prixVente))
             {
                 ModelState.AddModelError("PrixMiseEnVenteString", "Le prix doit être un nombre positif avec au maximum 2 décimales");
             }
@@ -348,9 +317,8 @@ namespace ExpressVoitures.Controllers
                 try
                 {
                     if (!await TentativeTelechargementImageAsync(voiture))
-                    {
                         return await RetournerVueAvecListes(voiture);
-                    }
+
                     if (voiture.TelechargerImage != null)
                     {
                         await _voitureService.MettreAJourAvecImageAsync(voiture, voiture.TelechargerImage);
@@ -384,14 +352,13 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> EditSimple(int id, [Bind("Id,Annee,Image,TelechargerImage,PrixMiseEnVenteString,PrixMiseEnVente,AnnoncePubliee,IdMarque,IdModele,IdFinition")] Voiture voiture)
         {
             if (id != voiture.Id)
-            {
                 return NotFound();
-            }
 
-            if (!double.TryParse(voiture.PrixMiseEnVenteString.Replace(",", "."),
-                     NumberStyles.Any,
-                     CultureInfo.InvariantCulture,
-                     out double prixVente))
+            if (!double.TryParse(
+                voiture.PrixMiseEnVenteString.Replace(".", ","),
+                NumberStyles.Any,
+                new CultureInfo("fr-FR"),
+                out double prixVente))
             {
                 ModelState.AddModelError("PrixMiseEnVenteString", "Le prix doit être un nombre positif avec au maximum 2 décimales");
             }
@@ -401,19 +368,14 @@ namespace ExpressVoitures.Controllers
             }
 
             var voitureOriginale = await _voitureService.ObtenirParIdAsync(id);
-
             if (voitureOriginale == null)
-            {
                 return NotFound();
-            }
 
             // Vérifier l'autorisation
             if (!User.IsInRole("Administrateur"))
             {
                 if (voitureOriginale.IdUtilisateur != _userManager.GetUserId(User))
-                {
                     return Forbid();
-                }
             }
 
             if (ModelState.IsValid)
@@ -421,11 +383,11 @@ namespace ExpressVoitures.Controllers
                 try
                 {
                     if (!await TentativeTelechargementImageAsync(voiture))
-                    {
                         return await RetournerVueAvecListes(voiture);
-                    }
+                    
                     voiture.AnnoncePubliee = true;
                     voiture.IdUtilisateur = voitureOriginale.IdUtilisateur;
+
                     if (voiture.TelechargerImage != null)
                     {
                         await _voitureService.MettreAJourAvecImageAsync(voiture, voiture.TelechargerImage);
@@ -458,15 +420,11 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var voiture = await _voitureService.ObtenirParIdAsync(id.Value);
             if (voiture == null)
-            {
                 return NotFound();
-            }
 
             // Vérifier l'autorisation
             if (!User.IsInRole("Administrateur"))
@@ -484,11 +442,8 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var voiture = await _voitureService.ObtenirParIdAsync(id);
-
             if (voiture == null)
-            {
                 return NotFound();
-            }
 
             // Vérifier l'autorisation
             if (!User.IsInRole("Administrateur"))
@@ -595,7 +550,7 @@ namespace ExpressVoitures.Controllers
                     ModelState.AddModelError("TelechargerImage", "Seuls les fichiers JPG et PNG sont autorisés.");
 
                 if (exception.Message == "TAILLE_INVALIDE")
-                    ModelState.AddModelError("TelechargerImage", "La taille du fichier ne doit pas dépasser 2 Mo.");
+                    ModelState.AddModelError("TelechargerImage", "La taille du fichier ne doit pas dépasser 10 Mo.");
 
                 if (exception.Message == "MIME_INVALIDE")
                     ModelState.AddModelError("TelechargerImage", "Le fichier n'est pas une image valide.");

@@ -40,15 +40,11 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var finition = await _finitionService.ObtenirParIdAsync(id.Value);
             if (finition == null)
-            {
                 return NotFound();
-            }
 
             return View(finition);
         }
@@ -73,9 +69,7 @@ namespace ExpressVoitures.Controllers
             bool finitionExiste;
             finitionExiste = await _finitionService.ExistePourModeleAsync(finition.Nom, finition.IdModele);
             if (finitionExiste)
-            {
                 ModelState.AddModelError("", "Une finition portant ce nom existe déjà pour ce modèle.");
-            }
 
             if (ModelState.IsValid)
             {
@@ -109,15 +103,12 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var finition = await _finitionService.ObtenirParIdAsync(id.Value);
             if (finition == null)
-            {
                 return NotFound();
-            }
+
             var modeles = await _modeleService.ObtenirTousAsync();
             ViewData["IdModele"] = new SelectList(modeles, "Id", "Nom", finition.IdModele);
             return View(finition);
@@ -132,9 +123,7 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Edit(int id, [Bind("Id,Nom,IdModele")] Finition finition)
         {
             if (id != finition.Id)
-            {
                 return NotFound();
-            }
 
             bool finitionExiste;
             finitionExiste = await _finitionService.ExistePourModeleAsync(finition.Nom, finition.IdModele, finition.Id);
@@ -162,6 +151,7 @@ namespace ExpressVoitures.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
             var modeles = await _modeleService.ObtenirTousAsync();
             ViewData["IdModele"] = new SelectList(modeles, "Id", "Nom");
             return View(finition);
@@ -172,23 +162,16 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var finition = await _finitionService.ObtenirParIdAsync(id.Value);
             if (finition == null)
-            {
                 return NotFound();
-            }
 
             // Vérifier si une voiture utilise cette finition
             bool finitionUtilisee = await _voitureService.FinitionUtiliseeAsync(id.Value);
-
             if (finitionUtilisee)
-            {
                 return View("DeleteBlocked", finition);
-            }
 
             return View(finition);
         }

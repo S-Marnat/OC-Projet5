@@ -38,15 +38,11 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var marque = await _marqueService.ObtenirParIdAsync(id.Value);
             if (marque == null)
-            {
                 return NotFound();
-            }
 
             return View(marque);
         }
@@ -67,15 +63,14 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Create([Bind("Id,Nom")] Marque marque)
         {
             if (await _marqueService.NomExisteAsync(marque.Nom))
-            {
                 ModelState.AddModelError("Nom", "Une marque portant ce nom existe déjà.");
-            }
 
             if (ModelState.IsValid)
             {
                 await _marqueService.CreerAsync(marque);
                 return RedirectToAction(nameof(Index));
             }
+
             return View(marque);
         }
 
@@ -100,15 +95,12 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var marque = await _marqueService.ObtenirParIdAsync(id.Value);
             if (marque == null)
-            {
                 return NotFound();
-            }
+
             return View(marque);
         }
 
@@ -121,16 +113,12 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Edit(int id, [Bind("Id,Nom")] Marque marque)
         {
             if (id != marque.Id)
-            {
                 return NotFound();
-            }
 
             bool marqueExiste;
             marqueExiste = await _marqueService.NomExisteAsync(marque.Nom, marque.Id);
             if (marqueExiste)
-            {
                 ModelState.AddModelError("", "Une marque portant ce nom existe déjà.");
-            }
 
             if (ModelState.IsValid)
             {
@@ -151,6 +139,7 @@ namespace ExpressVoitures.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
             return View(marque);
         }
 
@@ -159,23 +148,16 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var marque = await _marqueService.ObtenirParIdAsync(id.Value);
             if (marque == null)
-            {
                 return NotFound();
-            }
 
             // Vérifier si une voiture utilise cette marque
             bool marqueUtilisee = await _voitureService.MarqueUtiliseeAsync(id.Value);
-
             if (marqueUtilisee)
-            {
                 return View("DeleteBlocked", marque);
-            }
 
             return View(marque);
         }

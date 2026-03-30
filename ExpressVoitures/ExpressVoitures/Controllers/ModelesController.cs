@@ -40,15 +40,11 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var modele = await _modeleService.ObtenirParIdAsync(id.Value);
             if (modele == null)
-            {
                 return NotFound();
-            }
 
             return View(modele);
         }
@@ -73,15 +69,14 @@ namespace ExpressVoitures.Controllers
             bool modeleExiste;
             modeleExiste = await _modeleService.ExistePourMarqueAsync(modele.Nom, modele.IdMarque);
             if (modeleExiste)
-            {
                 ModelState.AddModelError("", "Un modèle portant ce nom existe déjà pour cette marque.");
-            }
 
             if (ModelState.IsValid)
             {
                 await _modeleService.CreerAsync(modele);
                 return RedirectToAction(nameof(Index));
             }
+
             var marques = await _marqueService.ObtenirToutesAsync();
             ViewData["IdMarque"] = new SelectList(marques, "Id", "Nom", modele.IdMarque);
             return View(modele);
@@ -108,15 +103,12 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var modele = await _modeleService.ObtenirParIdAsync(id.Value);
             if (modele == null)
-            {
                 return NotFound();
-            }
+
             var marques = await _marqueService.ObtenirToutesAsync();
             ViewData["IdMarque"] = new SelectList(marques, "Id", "Nom", modele.IdMarque);
             return View(modele);
@@ -131,16 +123,12 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Edit(int id, [Bind("Id,Nom,IdMarque")] Modele modele)
         {
             if (id != modele.Id)
-            {
                 return NotFound();
-            }
 
             bool modeleExiste;
             modeleExiste = await _modeleService.ExistePourMarqueAsync(modele.Nom, modele.IdMarque, modele.Id);
             if (modeleExiste)
-            {
                 ModelState.AddModelError("", "Un modèle portant ce nom existe déjà pour cette marque.");
-            }
 
             if (ModelState.IsValid)
             {
@@ -161,6 +149,7 @@ namespace ExpressVoitures.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
             var marques = await _marqueService.ObtenirToutesAsync();
             ViewData["IdMarque"] = new SelectList(marques, "Id", "Nom", modele.IdMarque);
             return View(modele);
@@ -171,23 +160,16 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var modele = await _modeleService.ObtenirParIdAsync(id.Value);
             if (modele == null)
-            {
                 return NotFound();
-            }
 
             // Vérifier si une voiture utilise ce modèle
             bool modeleUtilise = await _voitureService.ModeleUtiliseAsync(id.Value);
-
             if (modeleUtilise)
-            {
                 return View("DeleteBlocked", modele);
-            }
 
             return View(modele);
         }

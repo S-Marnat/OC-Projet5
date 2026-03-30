@@ -36,15 +36,11 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var vente = await _venteService.ObtenirParIdAsync(id.Value);
             if (vente == null)
-            {
                 return NotFound();
-            }
 
             return View(vente);
         }
@@ -67,17 +63,13 @@ namespace ExpressVoitures.Controllers
             bool venteExiste;
             venteExiste = await _venteService.ExistePourVoitureAsync(vente.IdVoiture.Value);
             if (venteExiste)
-            {
                 ModelState.AddModelError("", "Une vente a déjà été ajoutée pour cette voiture.");
-            }
 
             var voitureVendue = await _voitureService.ObtenirParIdAsync(vente.IdVoiture.Value);
             if (voitureVendue != null)
             {
                 if (vente.Date < voitureVendue.DateAchat)
-                {
                     ModelState.AddModelError("", "La date de vente ne peut pas être antérieure à la date d'achat de la voiture.");
-                }
             }
 
             if (ModelState.IsValid)
@@ -85,6 +77,7 @@ namespace ExpressVoitures.Controllers
                 await _venteService.CreerAsync(vente);
                 return RedirectToAction(nameof(Index));
             }
+
             var voitures = await _voitureService.ObtenirToutesAsync();
             ViewData["IdVoiture"] = new SelectList(voitures, "Id", "NomComplet", vente.IdVoiture);
             return View(vente);
@@ -94,15 +87,11 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var vente = await _venteService.ObtenirParIdAsync(id.Value);
             if (vente == null)
-            {
                 return NotFound();
-            }
 
             var voitures = await _voitureService.ObtenirToutesAsync();
             ViewData["IdVoiture"] = new SelectList(voitures, "Id", "NomComplet", vente.IdVoiture);
@@ -117,24 +106,18 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Edit(int id, [Bind("Id,Date,IdVoiture")] Vente vente)
         {
             if (id != vente.Id)
-            {
                 return NotFound();
-            }
 
             bool venteExiste;
             venteExiste = await _venteService.ExistePourVoitureAsync(vente.IdVoiture.Value, vente.Id);
             if (venteExiste)
-            {
                 ModelState.AddModelError("", "Une vente a déjà été ajoutée pour cette voiture.");
-            }
 
             var voitureVendue = await _voitureService.ObtenirParIdAsync(vente.IdVoiture.Value);
             if (voitureVendue != null)
             {
                 if (vente.Date < voitureVendue.DateAchat)
-                {
                     ModelState.AddModelError("", "La date de vente ne peut pas être antérieure à la date d'achat de la voiture.");
-                }
             }
 
             if (ModelState.IsValid)
@@ -156,6 +139,7 @@ namespace ExpressVoitures.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
             var voitures = await _voitureService.ObtenirToutesAsync();
             ViewData["IdVoiture"] = new SelectList(voitures, "Id", "NomComplet", vente.IdVoiture);
             return View(vente);
@@ -165,15 +149,11 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var vente = await _venteService.ObtenirParIdAsync(id.Value);
             if (vente == null)
-            {
                 return NotFound();
-            }
 
             return View(vente);
         }

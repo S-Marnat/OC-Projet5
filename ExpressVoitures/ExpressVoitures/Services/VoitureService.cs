@@ -27,7 +27,6 @@ namespace ExpressVoitures.Services
                 File.Delete(chemin);
         }
 
-
         public async Task CreerAsync(Voiture voiture)
         {
             _context.Voitures.Add(voiture);
@@ -203,7 +202,7 @@ namespace ExpressVoitures.Services
                 throw new Exception("EXTENSION_INVALIDE");
 
             // Vérifier la taille du fichier
-            long tailleMax = 2 * 1024 * 1024;
+            long tailleMax = 10 * 1024 * 1024;
             if (fichier.Length > tailleMax)
                 throw new Exception("TAILLE_INVALIDE");
 
@@ -214,24 +213,11 @@ namespace ExpressVoitures.Services
 
         public async Task<string> TelechargerImageAsync(IFormFile fichier)
         {
-            // Vérifier que le fichier n'est pas vide
-            if (fichier == null || fichier.Length == 0)
-                throw new Exception("FICHIER_VIDE");
+            // Vérification de l'image
+            ValiderImage(fichier);
 
-            // Vérifier l'extension du fichier
-            var extensionsAutorisees = new[] { ".jpg", ".jpeg", ".png" };
+            // Récupération de l'extension
             var extension = Path.GetExtension(fichier.FileName).ToLower();
-            if (!extensionsAutorisees.Contains(extension))
-                throw new Exception("EXTENSION_INVALIDE");
-
-            // Vérifier la taille du fichier
-            long tailleMax = 2 * 1024 * 1024;
-            if (fichier.Length > tailleMax)
-                throw new Exception("TAILLE_INVALIDE");
-
-            // Vérification MIME
-            if (!fichier.ContentType.StartsWith("image/"))
-                throw new Exception("MIME_INVALIDE");
 
             // Génération d'un nom de fichier unique
             var nomImage = Guid.NewGuid() + extension;

@@ -123,6 +123,10 @@ select {
     color: red;
 }
 
+.modal h2 {
+    font-size: 0.8rem;
+}
+
 
 /* Menu de navigation */
 
@@ -363,4 +367,35 @@ a.boutonAction:focus, a.boutonAction:active, a.boutonAction:hover {
 
 .authentification .ligneBoutons span {
     padding-top: 1.25rem;
+}
+
+
+/* -- Media query -- */
+@media (max-width: 992px) {
+    main {
+        padding: 4rem 1.5rem;
+    }
+
+    .formDonnees form {
+        padding: 1.7rem 2rem 3rem 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    main {
+        padding: 2rem 1rem;
+    }
+
+    header nav {
+        height: 4.5rem;
+    }
+
+    .formDonnees form {
+        padding: 1.5rem 1rem 2rem 1rem;
+    }
+
+    .thumbnail {
+        margin: 0.75rem;
+        padding: 0.5rem;
+    }
 }

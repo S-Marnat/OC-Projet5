@@ -36,15 +36,11 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var reparation = await _reparationService.ObtenirParIdAsync(id.Value);
             if (reparation == null)
-            {
                 return NotFound();
-            }
 
             return View(reparation);
         }
@@ -81,6 +77,7 @@ namespace ExpressVoitures.Controllers
                 await _reparationService.CreerAsync(reparation);
                 return RedirectToAction(nameof(Index));
             }
+
             var voitures = await _voitureService.ObtenirToutesAsync();
             ViewData["IdVoiture"] = new SelectList(voitures, "Id", "NomComplet", reparation.IdVoiture);
             return View(reparation);
@@ -90,15 +87,11 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var reparation = await _reparationService.ObtenirParIdAsync(id.Value);
             if (reparation == null)
-            {
                 return NotFound();
-            }
 
             reparation.CoutString = reparation.Cout.ToString("0.##", new CultureInfo("fr-FR"));
 
@@ -115,14 +108,13 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Edit(int id, [Bind("Id,ReparationEffectuee,Cout,CoutString,IdVoiture")] Reparation reparation)
         {
             if (id != reparation.Id)
-            {
                 return NotFound();
-            }
 
-            if (!double.TryParse(reparation.CoutString.Replace(",", "."),
-                     NumberStyles.Any,
-                     CultureInfo.InvariantCulture,
-                     out double cout))
+            if (!double.TryParse(
+                reparation.CoutString.Replace(".", ","),
+                NumberStyles.Any,
+                new CultureInfo("fr-FR"),
+                out double cout))
             {
                 ModelState.AddModelError("CoutString", "La valeur saisie pour le prix doit être un nombre positif, avec au maximum 2 décimales");
             }
@@ -150,6 +142,7 @@ namespace ExpressVoitures.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
             var voitures = await _voitureService.ObtenirToutesAsync();
             ViewData["IdVoiture"] = new SelectList(voitures, "Id", "NomComplet", reparation.IdVoiture);
             return View(reparation);
@@ -159,15 +152,11 @@ namespace ExpressVoitures.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var reparation = await _reparationService.ObtenirParIdAsync(id.Value);
             if (reparation == null)
-            {
                 return NotFound();
-            }
 
             return View(reparation);
         }
